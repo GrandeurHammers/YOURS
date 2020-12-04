@@ -1,0 +1,36 @@
+globalvar define ww_botHeroes;
+globalvar define ww_heroQueue;
+globalvar define aa_InteractionTextOptions;
+globalvar define aa_InteractionDefaultBindings;
+globalvar define BotsLockedMove;
+globalvar define TeamSizes;
+globalvar define NumberOfOpenSlots;
+globalvar define ww_i;
+globalvar define GlobalInitialize;
+globalvar define ValueCommunications;
+globalvar define BindingsAction;
+globalvar define ValueModesString;
+globalvar define ValueActionsAnyString;
+globalvar define ValueActionsEditString;
+globalvar define ValueActionsNormalString;
+globalvar define ValueActionsCameraString;
+globalvar define ValueButtonString;
+globalvar define ww_SetFDModeActive;
+globalvar define ModeEditPlayers;
+globalvar define EffectsToDestroy;
+globalvar define EffectsToDestroyControleInt;
+globalvar define SettingsCredits;
+globalvar define SettingsDeveloper;
+globalvar define SettingsAll;
+// Menu Vars
+globalvar define _extendedGlobalCollection;
+globalvar define _arrayBuilder;
+globalvar define textBudget;
+globalvar define exitButtonProperties;
+globalvar define cursorMenuWidth!;
+globalvar define cursorMenuHeight!;
+
+// Button click sounds
+
+
+
