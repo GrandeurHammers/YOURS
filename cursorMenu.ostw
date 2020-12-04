@@ -1,0 +1,571 @@
+import "./Vars/Global.ostw";
+import "./Vars/Player.ostw";
+
+define thinfont(define s): <"<0>", s>;
+define ResetAimSpeed(): SetAimSpeed(EventPlayer(), 100);
+define SetPrimaryFireDisabled(): SetPrimaryFireEnabled(EventPlayer(), false);
+define SetSecondaryFireDisabled(): SetSecondaryFireEnabled(EventPlayer(), false);
+
+define cursorX(): AngleDifference(HorizontalAngleFromDirection(FacingDirectionOf()), HorizontalAngleFromDirection(menuOriginalFacing));
+define cursorY(): AngleDifference(VerticalAngleFromDirection(FacingDirectionOf()), VerticalAngleFromDirection(menuOriginalFacing));
+
+define menuYFromMenuZ(Vector z): DirectionFromAngles(HorizontalAngleFromDirection(z), VerticalAngleFromDirection(z) - 90);
+define renderPosOf(Vector eye = EyePosition(), Vector facing = FacingDirectionOf(), define x = 0, define y = 0): UpdateEveryFrame(eye + 100*(x*CrossProduct(facing, menuYFromMenuZ(facing)) + 
+    y*menuYFromMenuZ(facing) + 3*facing));
+define renderTextAt(ref Vector eye = EyePosition(), ref Vector facing = FacingDirectionOf(), ref define x = 0, ref define y = 0, ref define content = "", ref define scale = 1, 
+    ref Color color = Color.White)
+{
+    CreateInWorldText(
+        VisibleTo:      EventPlayer(),
+        Header:         content,
+        Position:       renderPosOf(eye, facing, x, y-0.2),
+        Scale:          scale,
+        Clipping:       Clipping.DoNotClip,
+        Reevaluation:   InworldTextRev.VisibleToAndPosition,
+        TextColor:      color
+    );
+    return LastTextID();
+}
+
+define constructVerticalBar(ref define bar, ref define height) {
+    define output! = "";
+    for (iter = 0.3; iter < height; iter += 0.3) {
+        output = <"<0><1>", output, menuVerticalBar>;
+    }
+    return output;
+}
+define constructHorizontalBar(ref define bar, ref define width) {
+    define output! = "";
+    for (iter = 0; iter < (23/5) * width - 1; iter++) {
+        output = <"<0><1>", output, menuHorizontalBar>;
+    }
+    return output;
+}
+
+enum MenuButton
+{
+    Text,
+    Action1,
+    Action2,
+    Scale,
+    PosX,
+    PosY,
+    ClickWidth,
+    ClickHeight,
+    ColDefault,
+    ColHover,
+    Font, //TODO: booleans
+    IsClickable,
+    IsVisible,
+    
+    WorldTextID,
+    TextExists,
+    ToDestroy
+}
+
+define isHovered(define b): b[MenuButton.IsClickable] && AbsoluteValue(cursorX()-b[MenuButton.PosX]) <= b[MenuButton.ClickWidth]/2 && 
+                                                         AbsoluteValue(cursorY()-b[MenuButton.PosY]) <= b[MenuButton.ClickHeight]/2;
+
+// define GetCharSize(define char): __char_dict_values[IndexOfArrayValue(__char_dict_keys, char)];
+
+rule: "Global init"
+{
+    textBudget = 128;
+    if( WorkshopSettingToggle("Extra", "Server load hud", false, 0)) { 
+        CreateHudText(
+            VisibleTo:      HostPlayer(), 
+            Header:         ServerLoadAverage(), 
+            Subheader:      "Server Load", 
+            Location:       Location.Right,
+            HeaderColor:    Color.Turquoise,
+            SortOrder:      -1
+        );
+        textBudget--;
+    }
+    CreateHudText(
+        VisibleTo:      FilteredArray(AllPlayers(), ArrayElement().isInMenu), 
+        Text:           <"Cursor Menu created by Josbird <0> Code: GETVX", AbilityIconString(Hero.Mercy, Button.Ultimate)>,
+        Location:       Location.Right,
+        TextColor:      Color.Turquoise,
+        SortOrder:      -100
+    );
+    textBudget--;
+    if(WorkshopSettingToggle("Josbird's Cursor Menu", "Menu prompt hud", true, 5)) {
+        CreateHudText(
+            VisibleTo:      FilteredArray(AllPlayers(), !ArrayElement().isInMenu),
+            Header:         thinfont(<"Press Interact [<0>] to open menu", InputBindingString(Button.Interact)>),
+            Location:       Location.Top,
+            SortOrder:      1,
+            HeaderColor:    Color.Yellow
+        );
+        textBudget--;
+    }
+    menuWidth = WorkshopSettingReal(
+        Category:       "Josbird's Cursor Menu",
+        Name:           "Menu Width",
+        Default:        5,
+        Min:            0,
+        Max:            10,
+        SortOrder:      1
+    );
+    menuHeight = WorkshopSettingReal(
+        Category:       "Josbird's Cursor Menu",
+        Name:           "Menu Height",
+        Default:        2.5,
+        Min:            0,
+        Max:            5,
+        SortOrder:      2
+    );
+    clickSound = WorkshopSettingToggle(
+        Category:       "Josbird's Cursor Menu",
+        Name:           "Button click sounds",
+        Default:        true,
+        SortOrder:      3
+    );
+    debugMode = WorkshopSettingToggle(
+        Category:       "Josbird's Cursor Menu",
+        Name:           "Debug mode (show button click areas)",
+        Default:        false,
+        SortOrder:      4
+    );
+    disablesGameHUD = WorkshopSettingToggle("Josbird's Cursor Menu", "Menu disables game hud", true, 7);
+    menuHorizontalBar = "━";
+    menuVerticalBar = "┃\n";
+    exitButtonProperties = ["exit menu", menuWidth/2 - 0.15, menuHeight/2 - 0.15, 0.35];
+
+    /* TODO: Auto click area detection
+
+    __char_dict_values = [
+        1, 1, 1, 0.375, 0.404, 0.617, 0.869, 0.969, 1.297, 0.976, 0.309, 0.5, 0.5, 0.549, 0.869, 0.36, 0.334, 0.36, 0.677, 0.869, 0.869, 0.869, 0.869, 0.869, 0.869,
+        0.869, 0.869, 0.869, 0.869, 0.36, 0.36, 0.749, 0.869, 0.749, 0.783, 1.138, 0.971, 0.805, 0.847, 0.954, 0.681, 0.67, 1.085, 0.973, 0.356, 0.627, 0.903, 0.618, 1.238, 1.086, 1.115, 0.767, 1.115,
+        0.829, 0.702, 0.612, 0.92, 0.947, 1.339, 0.997, 0.834, 0.867, 0.5, 0.677, 0.5, 0.749, 0.749, 0.749, 0.838, 0.822, 0.593, 0.827, 0.735, 0.438, 0.821, 0.762, 0.32, 0.32, 0.743, 0.32, 1.124, 0.764, 
+        0.802, 0.828, 0.828, 0.486, 0.574, 0.421, 0.76, 0.747, 1.087, 0.798, 0.72, 0.683, 0.5, 0.749, 0.5, 0.999, 0.971, 0.971, 0.862, 0.681, 1.086, 1.115, 0.92, 0.838, 0.838, 0.838, 0.838, 0.838, 0.838, 
+        0.593, 0.735, 0.735, 0.735, 0.735, 0.32, 0.32, 0.32, 0.32, 0.764, 0.802, 0.802, 0.802, 0.802, 0.802, 0.76, 0.76, 0.76, 0.76, 0.869, 0.749, 0.869, 0.869, 0.749, 0.999, 0.869, 0.783, 1.116, 1.116, 
+        1.128, 0.749, 0.749, 0.749, 1.325, 1.115, 0.999, 0.869, 0.749, 0.749, 0.869, 0.749, 0.749, 0.999, 0.999, 0.872, 0.749, 0.579, 0.579, 0.999, 1.17, 0.802, 0.783, 0.404, 0.749, 0.999, 0.869, 0.749, 
+        0.971, 0.778, 0.778, 1.079, 1, 0.971, 0.971, 1.115, 1.46, 1.259, 0.72, 1.0, 0.667, 0.667, 0.36, 0.36, 0.869, 0.999, 0.72, 0.834, 0.19, 0.988, 0.466, 0.466, 0.799, 0.789, 0.869, 0.36, 0.36, 0.667, 
+        1.857, 0.971, 0.681, 0.971, 0.681, 0.681, 0.356, 0.356, 0.356, 0.356, 1.115, 1.115, 1, 1.115, 0.92, 0.92, 0.92, 0.32, 0.749, 0.749, 0.749, 0.749, 0.749, 0.749, 0.749, 0.749, 0.749, 0.749, 0.375, 
+        0.999, 0.749, 0.334, 0.581, 0.581, 0.581, 1.352, 1.352, 1.352, 0.954, 0.869, 0.834, 0.767, 0.802, 0.72, 0.828, 0.971, 0.838, 0.971, 0.838, 0.971, 0.838, 0.847, 0.593, 0.847, 0.847, 0.593, 0.847, 
+        0.593, 0.954, 1.042, 0.954, 0.827, 0.681, 0.735, 0.681, 0.681, 0.735, 0.681, 0.735, 0.681, 0.735, 1.085, 0.821, 1.085, 0.821, 1.085, 0.821, 1.085, 0.821, 0.973, 0.973, 0.762, 0.356, 0.32, 0.32, 
+        0.356, 0.32, 0.356, 0.983, 0.642, 0.903, 0.743, 0.743, 0.618, 0.32, 0.618, 0.32, 0.618, 0.535, 0.618, 0.545, 0.618, 0.32, 1.086, 0.764, 1.086, 0.764, 1.086, 0.764, 1.023, 0.92, 0.764, 1.115, 
+        0.802, 1.115, 0.802, 0.829, 0.486, 0.829, 0.486, 0.829, 0.486, 0.702, 0.574, 0.702, 0.574, 0.702, 0.574, 0.702, 0.574, 0.612, 0.421, 0.612, 0.629, 0.612, 0.421, 0.76, 0.92, 0.76, 0.76, 0.92, 
+        0.76, 0.92, 0.76, 0.92, 0.76, 1.339, 0.834, 0.72, 0.867, 0.683, 0.867, 0.683, 0.867, 0.683, 1.115, 0.783, 0.767, 0.5, 0.5, 0.5, 0.5, 0.589, 0.869, 0.869, 0.971, 0.838, 0.404, 0.92, 0.735, 1.085, 
+        0.821, 1.085, 0.528, 0.5, 0.702, 0.574, 0.612, 0.421, 0.971, 0.838, 0.32, 0.36, 0.749, 0.36, 0.794, 1.004, 1.096, 0.851, 1.091, 1.105, 0.955, 0.846, 0.828, 0.723, 0.879, 0.873, 0.76, 0.837, 0.628, 
+        0.998, 1.069, 0.681, 0.681, 0.981, 0.621, 0.84, 0.702, 0.356, 0.356, 0.627, 1.317, 1.337, 0.991, 0.903, 0.681, 0.874, 0.938, 0.971, 0.783, 0.79, 0.621, 1.021, 0.681, 1.449, 0.816, 1.001, 1.001, 
+        0.903, 0.925, 1.238, 0.973, 1.115, 0.941, 0.752, 0.847, 0.612, 0.894, 1.092, 0.898, 0.999, 0.901, 1.441, 1.522, 0.9, 1.136, 0.775, 0.84, 1.527, 0.813, 0.851, 0.805, 0.635, 0.576, 0.766, 0.735, 
+        1.168, 0.675, 0.759, 0.759, 0.743, 0.716, 0.865, 0.783, 0.802, 0.744, 0.828, 0.593, 0.612, 0.775, 0.923, 0.798, 0.781, 0.75, 1.074, 1.129, 0.749, 0.933, 0.631, 0.579, 1.069, 0.628, 1.062, 0.735, 
+        0.785, 0.576, 0.579, 0.574, 0.32, 0.32, 0.32, 1.057, 1.079, 0.785, 0.743, 0.871, 0.778, 0.725, 0.621, 0.576, 0.785, 0.641, 1.449, 1.168, 0.891, 0.764, 0.931, 0.743, 1.011, 0.784, 0.874, 0.74, 
+        0.874, 0.77, 0.898, 0.809, 0.92, 0.817, 0.872, 0.735, 0.877, 0.762, 0.356, 0.356, 1.115, 0.735, 0.971, 0.838, 1.115, 0.802, 0.681, 0.735, 0.67, 0.413, 1.339, 0.334, 0.72, 1.0, 0.749, 0.749, 0.581, 
+        0.512, 0.581, 0.581, 0.581, 0.581, 0.581, 0.581, 0.581, 0.581, 0.581, 0.581, 0.581, 0.581, 0.581, 0.581, 0.581, 0.839, 0.869, 1.316, 1.383, 0.435, 0.749, 1.761, 0.23, 1.352, 1.352, 1.352, 1.352, 
+        1.352, 1.283, 1.352, 1.352, 1.352, 1.352, 1.352, 1.352, 0.926, 0.869, 0.19, 0.749, 0.36, 0.749, 0.877, 1.228, 1.238, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1];
+    __char_dict_strings = [
+        '——— !\"#$%&\'()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMN', 'OPQRSTUVWXYZ[\\]^_`abcdefghijklmnopqrstuvwxyz{|}~ÄÅ', 
+        'ÇÉÑÖÜáàâäãåçéèêëíìîïñóòôöõúùûü†°¢£§•¶ß®©™´¨≠ÆØ∞±≤≥', '¥µ∂∑∏π∫ªºΩæø¿¡¬√ƒ≈∆«»…—ÀÃÕŒœ–—“”‘’÷◊ÿŸ⁄€‹›ﬁﬂ‡·‚„‰Â', 'ÊÁËÈÍÎÏÌÓÔ—ÒÚÛÙıˆ˜¯˘˙˚¸˝˛ˇ\xa0¤¦\xad²³¹¼½¾Ð×ÝÞðýþĀāĂăĄąĆ', 
+        'ćĈĊċČčĎďĐđĒēĔĖėĘęĚěĜĝĞğĠġĢģĤĦħĪīĭĮįİĲĳĶķĸĹĺĻļĽľĿŀŁ', 'łŃńŅņŇňŉŊŋŌōŐőŔŕŖŗŘřŚśŜŝŞşŠšŢţŤťŦŧũŪūŭŮůŰűŲųŴŶŷŹźŻ', 'żŽžƏǄǅǆǇǈǉǊǋǌǍǎǑǓǝǦǧǴȀȁȘșȚțȦȧȷʼˉ;ΓΔΘΣΦΩαβδεημςστφψ', 
+        'ЀЁЂЃЄЅІЇЈЉЊЋЌЍЎЏАБВГДЕЖЗИЙКЛМНОПРСТУФХЦЧШЩЪЫЬЭЮЯаб', 'вгдежзийклмнопрстуфхцчшщъыьэюяѐёђѓєѕіїјљњћќѝўџҐґҒғ', 'ҖҗҚқҜҝҢңҮүҰұҲҳҶҷҸҹҺһӀӏӘәӢӣӨөӮӯḞẂẄ‑‒―‗‾⁰⁴⁵⁶⁷⁸⁹₀₁₂₃₄', 
+        '₅₆₇₈₉₣₤₧℁℅ℓ№℗⅓⅔⅕⅖⅗⅘⅙⅚⅛⅜⅝⅞∅−∕∘∙∼ﬀﬃﬄ————————————————'];
+    __char_dict_keys = [];
+    foreach(define string in __char_dict_strings) {
+        define str_len! = StringLength(string);
+        for(define i! = 0; i < str_len; i++) ModifyVariable(__char_dict_keys, Operation.AppendToArray, StringSlice(string, i, 1));
+        MinWait();
+    }
+    dict_ready = true;
+    */
+}
+
+rule: "(For OSTW purposes only) Include all subroutines"
+Event.OngoingPlayer 
+{
+    if (NumberOfPlayers() < -9999) {
+        createMenuButton();
+        destroyMenuButton();
+        modifyMenuButton();
+        getButtonProperties();
+    }
+}
+
+rule: "Toggle menu"
+Event.OngoingPlayer
+if(!IsDummyBot())
+if(IsButtonHeld(EventPlayer(), Button.Interact))
+if(!IsCommunicatingAnyEmote())
+{
+    isInMenu = !isInMenu;
+}
+
+rule: "Open menu"
+Event.OngoingPlayer
+if(!IsDummyBot())
+if(isInMenu)
+{       
+    SetAimSpeed(EventPlayer(), 15);
+    menuOriginalFacing = FacingDirectionOf();
+    SetPrimaryFireDisabled();
+    SetSecondaryFireDisabled();
+    if(disablesGameHUD)
+    {
+        DisableHeroHud();
+        DisableGameModeHud();
+    }
+    menuFrame = [];
+    createCursor();
+    Wait(0.016);
+    createBorderCorners();
+    createBorderEdges();
+    Wait(0.016);
+    createExitButton();
+    Wait(0.016);
+    doButtonUpdate();
+    if(debugMode) createClickAreas();
+}
+
+rule: "Menu loading hud"
+Event.OngoingPlayer
+if(WorkshopSettingToggle("Josbird's Cursor Menu", "Loading hud", true, 6))
+if(isInMenu)
+{
+    CreateHudText(
+        VisibleTo:      EventPlayer(),
+        Header:         "ｌｏａｄｉｎｇ ｍｅｎｕ．．．",
+        Location:       Location.Top,
+        SortOrder:      3,
+        HeaderColor:    Color.Turquoise,
+        Reevaluation:   HudTextRev.None
+    );
+    loadingText = LastTextID();
+    textBudget--;
+    Wait(1);
+    DestroyHudText(loadingText);
+    textBudget++;
+}
+
+rule: "Close menu"
+Event.OngoingPlayer
+if(!IsDummyBot())
+if(!isInMenu)
+{
+    ResetAimSpeed();
+    SetPrimaryFireEnabled();
+    SetSecondaryFireEnabled();
+    if(disablesGameHUD)
+    {
+        EnableHeroHud();
+        EnableGameModeHud();
+    }
+    for(iter = 0; iter < CountOf(menuFrame); iter++)
+    {
+        DestroyInWorldText(menuFrame[iter]);
+        textBudget++;
+    }
+    DestroyIcon(exitButtonIcon);
+    doButtonUpdate();
+}
+
+void createCursor() "Create menu cursor"
+{
+    CreateInWorldText(
+        VisibleTo:      FilteredArray(EventPlayer(), TotalTimeElapsed() % 0.032 < 0.016),
+        Header:         "▲",
+        Position:       renderPosOf(x: cursorX(), y: cursorY()-0.2),
+        Scale:          3,
+        Clipping:       Clipping.DoNotClip
+    );
+    ModifyVariable(menuFrame, Operation.AppendToArray, LastTextID());
+    textBudget--;
+    CreateInWorldText(
+        VisibleTo:      FilteredArray(EventPlayer(), TotalTimeElapsed() % 0.032 >= 0.016),
+        Header:         "▲",
+        Position:       renderPosOf(x: cursorX(), y: cursorY()-0.2),
+        Scale:          3,
+        Clipping:       Clipping.DoNotClip
+    );
+    ModifyVariable(menuFrame, Operation.AppendToArray, LastTextID());
+    textBudget--;
+    return;
+}
+
+void createBorderEdges() "Create menu border edges"
+{
+    ModifyVariable(menuFrame, Operation.AppendToArray, renderTextAt(x: 0, y: menuHeight/2, content: constructHorizontalBar(menuHorizontalBar, menuWidth), scale: 4));
+    textBudget--;
+    ModifyVariable(menuFrame, Operation.AppendToArray, renderTextAt(x: 0, y: -menuHeight/2, content: constructHorizontalBar(menuHorizontalBar, menuWidth), scale: 4));
+    textBudget--;
+    ModifyVariable(menuFrame, Operation.AppendToArray, renderTextAt(x: menuWidth/2, y: -0.095*RoundToInteger(menuHeight/0.3, Rounding.Down), content: constructVerticalBar(menuVerticalBar, menuHeight), scale: 4));
+    textBudget--;
+    ModifyVariable(menuFrame, Operation.AppendToArray, renderTextAt(x: -menuWidth/2, y: -0.095*RoundToInteger(menuHeight/0.3, Rounding.Down), content: constructVerticalBar(menuVerticalBar, menuHeight), scale: 4));
+    textBudget--;
+
+    return;
+}
+
+void createBorderCorners() "Create menu border corners"
+{
+    ModifyVariable(menuFrame, Operation.AppendToArray, renderTextAt(x: -menuWidth/2, y: menuHeight/2, content: "┌", scale: 4));
+    textBudget--;
+    ModifyVariable(menuFrame, Operation.AppendToArray, renderTextAt(x: menuWidth/2, y: menuHeight/2, content: "┐", scale: 4));
+    textBudget--;
+    ModifyVariable(menuFrame, Operation.AppendToArray, renderTextAt(x: -menuWidth/2, y: -menuHeight/2, content: "└", scale: 4));
+    textBudget--;
+    ModifyVariable(menuFrame, Operation.AppendToArray, renderTextAt(x: menuWidth/2, y: -menuHeight/2, content: "┘", scale: 4));
+    textBudget--;
+
+    return;
+}
+
+void createExitButton() "Create exit button"
+{
+    CreateIcon(
+        VisibleTo:          EventPlayer(),
+        Position:           renderPosOf(EyePosition(), FacingDirectionOf(), exitButtonProperties[1], exitButtonProperties[2]-0.25),
+        Icon:               Icon.X,
+        Reevaluation:       IconRev.PositionAndColor,
+        IconColor:          AbsoluteValue(cursorX()-exitButtonProperties[1]) <= exitButtonProperties[3]/2 && AbsoluteValue(cursorY()-exitButtonProperties[2]) <= exitButtonProperties[3]/2 ? 
+                            Color.Yellow : Color. Red,
+        ShowWhenOffscreen:  false
+    );
+    exitButtonIcon = LastCreatedEntity();
+}
+
+void createClickAreas() "Create click areas"
+{
+    for (iter = 0; iter < CountOf(buttons); iter++) {
+        ModifyVariable(menuFrame, Operation.AppendToArray, renderTextAt(
+            x:          buttons[EvaluateOnce(iter)][MenuButton.PosX] - buttons[EvaluateOnce(iter)][MenuButton.ClickWidth]/2,
+            y:          buttons[EvaluateOnce(iter)][MenuButton.PosY] + buttons[EvaluateOnce(iter)][MenuButton.ClickHeight]/2,
+            content:    "┌",
+            scale:      2,
+            color:      !buttons[EvaluateOnce(iter)][MenuButton.IsVisible] ? 
+                            CustomColor(0,0,0,0) : buttons[EvaluateOnce(iter)][MenuButton.IsClickable] ? Color.Yellow : Color.White
+        ));
+        textBudget--;
+        ModifyVariable(menuFrame, Operation.AppendToArray, renderTextAt(
+            x:          buttons[EvaluateOnce(iter)][MenuButton.PosX] + buttons[EvaluateOnce(iter)][MenuButton.ClickWidth]/2,
+            y:          buttons[EvaluateOnce(iter)][MenuButton.PosY] - buttons[EvaluateOnce(iter)][MenuButton.ClickHeight]/2,
+            content:    "┘",
+            scale:      2,
+            color:      !buttons[EvaluateOnce(iter)][MenuButton.IsVisible] ? 
+                            CustomColor(0,0,0,0) : buttons[EvaluateOnce(iter)][MenuButton.IsClickable] ? Color.Yellow : Color.White
+        ));
+        textBudget--;
+    }
+}
+
+void createButtonText(ref define index)
+{
+    CreateInWorldText(
+        VisibleTo:      EventPlayer(),
+        Header:         buttons[EvaluateOnce(index)][MenuButton.Font] ? thinfont(buttons[EvaluateOnce(index)][MenuButton.Text]) : 
+                                                                                   buttons[EvaluateOnce(index)][MenuButton.Text],
+        Position:       renderPosOf(EyePosition(), FacingDirectionOf(), buttons[EvaluateOnce(index)][MenuButton.PosX], buttons[EvaluateOnce(index)][MenuButton.PosY]-0.2),
+        Scale:          buttons[EvaluateOnce(index)][MenuButton.Scale],
+        Clipping:       Clipping.DoNotClip,
+        Reevaluation:   InworldTextRev.VisibleToPositionStringAndColor,
+        TextColor:      isHovered(buttons[EvaluateOnce(index)]) ? buttons[EvaluateOnce(index)][MenuButton.ColHover] 
+                                                                           : buttons[EvaluateOnce(index)][MenuButton.ColDefault]
+    );
+    buttons[EvaluateOnce(index)][MenuButton.WorldTextID] = LastTextID();
+    buttons[EvaluateOnce(index)][MenuButton.TextExists] = true;
+    textBudget--;
+}
+
+void createMenuButton() "Create a menu button"
+{
+    if (CountOf(newButton) != MenuButton.WorldTextID) LogToInspector(
+        <"[CursorMenu.createMenuButton] Error: incorrect number of arguments (got <0>, expected <1>)", destroyButtonID, MenuButton.WorldTextID>);
+    else {
+        lastMenuButtonID = CountOf(buttons);
+        for (iter=0; iter < CountOf(buttons); iter++) {
+            if(buttons[iter] == null) {
+                lastMenuButtonID = iter;
+                iter = CountOf(buttons);
+            }
+        }
+        buttons[lastMenuButtonID] = newButton;
+    }
+}
+
+void destroyMenuButton() "Destroy a menu button" 
+{
+    if(destroyButtonID >= CountOf(buttons) || !buttons[destroyButtonID]) LogToInspector(
+        <"[CursorMenu.destroyMenuButton] Error: tried to destroy an invalid button ID (<0>)", destroyButtonID>);
+    else buttons[destroyButtonID][MenuButton.ToDestroy] = true;
+}
+
+void modifyMenuButton() "Modify a menu button"
+{
+    if (CountOf(buttonModification)%2 == 0 || CountOf(buttonModification) < 3) LogToInspector(
+        <"[CursorMenu.modifyMenuButton] Error: incorrect number of arguments (<0>)", CountOf(buttonModification[0])>);
+    else if(buttonModification[0] >= CountOf(buttons) || !buttons[buttonModification[0]]) LogToInspector(
+        <"[CursorMenu.modifyMenuButton] Error: tried to modify an invalid button ID (<0>)", buttonModification[0]>);
+    else {
+        for(iter = 1; iter < CountOf(buttonModification); iter += 2) {
+            if(buttonModification[iter] < 0 || buttonModification[iter] >= MenuButton.WorldTextID) LogToInspector(
+                <"[CursorMenu.modifyMenuButton] Error: tried to modify an invalid property index (<0>)", CountOf(buttonModification[iter])>);
+            else buttons[buttonModification[0]][buttonModification[iter]] = buttonModification[iter+1];
+        }
+    }
+}
+
+void getButtonProperties() "Get properties of a menu button"
+{
+    if(getProperties >= CountOf(buttons) || !buttons[getProperties]) LogToInspector(
+        <"[CursorMenu.getButtonProperties] Error: tried to access an invalid button ID (<0>)", getProperties>);
+    else getProperties = ArraySlice(buttons[getProperties], 0, MenuButton.WorldTextID);
+}
+
+rule: "Check for button update"
+Event.OngoingPlayer
+if(isInMenu)
+if(IsTrueForAny(buttons, ArrayElement() && (
+        ArrayElement()[MenuButton.ToDestroy] || 
+        (!ArrayElement()[MenuButton.IsVisible] && ArrayElement()[MenuButton.TextExists]) ||
+        (ArrayElement()[MenuButton.IsVisible] && !ArrayElement()[MenuButton.TextExists])
+    )))
+{
+    doButtonUpdate();
+    Wait(0.016);
+}
+
+void doButtonUpdate() "Do button update"
+{
+    for (iter = 0; iter < CountOf(buttons); iter++) {
+        if (buttons[iter]) {
+            if (buttons[iter][MenuButton.ToDestroy]) {
+                if(buttons[iter][MenuButton.TextExists]) DestroyInWorldText(buttons[iter][MenuButton.WorldTextID]);
+                buttons[iter] = null;
+            }
+            else if ((!buttons[iter][MenuButton.IsVisible] && buttons[iter][MenuButton.TextExists]) || !isInMenu) {
+                DestroyInWorldText(buttons[iter][MenuButton.WorldTextID]);
+                textBudget++;
+                buttons[iter][MenuButton.TextExists] = false;
+            }
+            else if (buttons[iter][MenuButton.IsVisible] && !buttons[iter][MenuButton.TextExists]) {
+                createButtonText(iter);
+            }
+        }
+    }
+}
+
+rule: "Detect primary fire button press"
+Event.OngoingPlayer
+if(isInMenu)
+if(IsButtonHeld(Button: Button.PrimaryFire))
+{
+    if (AbsoluteValue(cursorX()-exitButtonProperties[1]) <= exitButtonProperties[3]/2 && AbsoluteValue(cursorY()-exitButtonProperties[2]) <= exitButtonProperties[3]/2) 
+        currActionID = exitButtonProperties[0];
+    foreach (define button in buttons) if(isHovered(button)) currActionID = button[MenuButton.Action1];
+    if (currActionID && clickSound) PlayEffect(EventPlayer(), PlayEffect.ExplosionSound, Position: EventPlayer(), Radius: 30);
+    Wait(0.016);
+    currActionID = null;
+}
+
+rule: "Detect secondary fire button press"
+Event.OngoingPlayer
+if(isInMenu)
+if(IsButtonHeld(Button: Button.SecondaryFire))
+{
+    if (AbsoluteValue(cursorX()-exitButtonProperties[1]) <= exitButtonProperties[3]/2 && AbsoluteValue(cursorY()-exitButtonProperties[2]) <= exitButtonProperties[3]/2) 
+        currActionID = exitButtonProperties[0];
+    foreach (define button in buttons) if(isHovered(button)) currActionID = button[MenuButton.Action2];
+    if (currActionID && clickSound) PlayEffect(EventPlayer(), PlayEffect.ExplosionSound, Position: EventPlayer(), Radius: 30);
+    Wait(0.016);
+    currActionID = null;
+}
+
+rule: "Action ID: Exit menu"
+Event.OngoingPlayer
+if(currActionID == "exit menu")
+{
+    isInMenu = false;
+}
+
+rule: "Cursor bounds"
+Event.OngoingPlayer
+if(isInMenu)
+if(AbsoluteValue(cursorX()) > menuWidth/2 + 0.05 || AbsoluteValue(cursorY()) > menuHeight/2 + 0.05)
+{
+    SetFacing(Direction: DirectionFromAngles(
+        Min(Max(HorizontalAngleFromDirection(menuOriginalFacing) - cursorX(), 
+                HorizontalAngleFromDirection(menuOriginalFacing) - menuWidth/2), 
+                HorizontalAngleFromDirection(menuOriginalFacing) + menuWidth/2),
+        Min(Max(VerticalAngleFromDirection(menuOriginalFacing) - cursorY(), 
+                VerticalAngleFromDirection(menuOriginalFacing) - menuHeight/2), 
+                VerticalAngleFromDirection(menuOriginalFacing) + menuHeight/2)
+        ));
+    Wait(0.016);
+    LoopIfConditionIsTrue();
+}
+
+rule: "Text budget warning"
+if(textBudget<0)
+{
+    SmallMessage(HostPlayer(), <"<0> Warning! Text budget exceeded! <0>", IconString(Icon.Warning)>);
+}
+
+rule: "▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒【Josbird's Cursor Menu】▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒" {}
+
+// rule: "▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒a" 9999 {}
+
+
+/*
+playervar define testbuttons;
+rule: "test buttons" 2 
+Event.OngoingPlayer
+{
+    testbuttons = [];
+    Wait(0.016);
+    for(define i = 0; i < 10; i++) {
+        newButton = [<"Test button <0>", i+1>,
+                     100+i,
+                     200+i,
+                     2,
+                     1*(2*(i%2)-1),
+                     1-0.3*RoundToInteger(i/2, Rounding.Down),
+                     0.75,
+                     0.2,
+                     RandomValueInArray([Color.White, Color.Yellow, Color.Green, Color.Purple, Color.Red, Color.Blue, Color.Aqua, Color.Orange, Color.SkyBlue, 
+                        Color.Turquoise, Color.LimeGreen, Color.Black, Color.Rose, Color.Violet, Color.Gray]),
+                     RandomValueInArray([Color.White, Color.Yellow, Color.Green, Color.Purple, Color.Red, Color.Blue, Color.Aqua, Color.Orange, Color.SkyBlue, 
+                        Color.Turquoise, Color.LimeGreen, Color.Black, Color.Rose, Color.Violet, Color.Gray]),
+                     RandomValueInArray([false, true]),
+                     true,
+                     true];
+        createMenuButton();
+        testbuttons[i] = lastMenuButtonID;
+    }
+}
+
+rule: "test action 1" 3
+Event.OngoingPlayer
+if(100 <= currActionID && currActionID < 200)
+{
+    switch (currActionID-100)
+    {
+        case 0: Communicate(Type: Communication.Hello); break;
+        case 1: Communicate(Type: Communication.Thanks); break;
+        case 2: Communicate(Type: Communication.GoingIn); break;
+        case 3: Communicate(Type: Communication.Acknowledge); break;
+        case 4: Communicate(Type: Communication.GroupUp); break;
+        case 5: Communicate(Type: Communication.Defending); break;
+        case 6: Communicate(Type: Communication.Attacking); break;
+        case 7: Communicate(Type: Communication.WithYou); break;
+        case 8: Communicate(Type: Communication.OnMyWay); break;
+        case 9: Communicate(Type: Communication.NeedHealing); break;
+    }
+}
+
+rule: "test action 2" 4
+Event.OngoingPlayer
+if(currActionID >= 200)
+{
+    buttonModification = [testbuttons[currActionID - 200], 8, Color.Black, 9, Color.Black];
+    modifyMenuButton();
+    Communicate(Type: Communication.Yes);
+}
+
+rule: "budget"
+Event.OngoingPlayer
+if(IsCrouching())
+{  
+    SmallMessage(EventPlayer(), textBudget);
+}
