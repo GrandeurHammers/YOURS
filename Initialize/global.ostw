@@ -105,7 +105,7 @@ void GlobalInspectorSetInit() "【 Subroutine 】▒▒  GlobalInspectorSet ▒�
     }
     else
     {
-        if (ww_botHeroes[1] == true)
+        if (botHeroes[1] == true)
         {
             LogToInspector(<"▒▒▒▒ @<0> Inspector Disabled ▒▒▒▒", TotalTimeElapsed()>);
         }
