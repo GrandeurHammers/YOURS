@@ -1,0 +1,20 @@
+{
+  "Lobby": {
+    "Map Rotation": "After A Game",
+    "Max Spectators": 12,
+    "Return To Lobby": "Never"
+  },
+  "Modes": {
+    "All": {
+      "Game Mode Start": "Manual",
+      "Hero Limit": "Off",
+      "Respawn As Random Hero": true
+    },
+    "Assault": {},
+    "Control": {},
+    "Escort": {},
+    "Hybrid": {},
+    "Skirmish": {}
+  },
+  "Description": "Y.O.U.R.S                              Version 1.0  By The Grandeur Hammers 【 FRMXP 】  <- More Details in Workshop Setting"
+}
