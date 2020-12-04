@@ -1,0 +1,10 @@
+import "../Vars/index.ostw";
+disabled rule: "▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒【 Bot 】▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒"
+{
+}
+
+void BotInit() "【 Subroutine 】▒▒  BotInit  ▒▒"
+{
+    CreateBeamEffect(FilteredArray(AllPlayers(Team.All), !IsDummyBot(ArrayElement()) && Mode == "Edit"), BeamType.GrappleBeam, EyePosition(EventPlayer()), BotLookPosition, Color.SkyBlue, EffectRev.VisibleToPositionAndRadius);
+    CreateEffect(FilteredArray(AllPlayers(Team.All), !IsDummyBot(ArrayElement()) && Mode == "Edit"), Effect.Sphere, EntityExists(BotLookOrbGrabedBy) == true ? [Color.Yellow, Color.Green, Color.Purple, Color.Blue, Color.Rose, Color.Aqua, Color.Orange, Color.Rose, Color.Violet][UpdateEveryFrame(RoundToInteger(9 * AbsoluteValue(SineFromRadians(TotalTimeElapsed() * 3.5)), Rounding.Nearest))] : BotLookOrbIsHovered ? Color.Orange : Color.SkyBlue, UpdateEveryFrame(BotLookPosition), 0.15 - (BotLookOrbIsHovered ? 0.05 * AbsoluteValue(SineFromDegrees(TotalTimeElapsed() * 3.5)) : 0), EffectRev.VisibleToPositionRadiusAndColor);
+}
