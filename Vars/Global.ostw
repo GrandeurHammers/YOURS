@@ -25,10 +25,15 @@ globalvar define SettingsAll;
 // Menu Vars
 globalvar define _extendedGlobalCollection;
 globalvar define _arrayBuilder;
-globalvar define textBudget;
-globalvar define exitButtonProperties;
-globalvar define cursorMenuWidth!;
-globalvar define cursorMenuHeight!;
+globalvar define exitButtonProperties 127;
+globalvar define menuWidth!;
+globalvar define menuHeight!;
+globalvar define menuHorizontalBar!;
+globalvar define menuVerticalBar!;
+globalvar define debugMode!;
+globalvar define clickSound!;
+globalvar define disablesGameHUD!;
+globalvar define textBudget 126;
 
 // Button click sounds
 
