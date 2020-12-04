@@ -1,0 +1,37 @@
+playervar define ww_isEditing;
+playervar define ww_noclipPosition;
+playervar define ww_grabbedBot;
+playervar define ww_targetedDummy;
+playervar define ww_placementDistance;
+playervar define ww_isChangingBot;
+playervar define ww_prevFacings;
+playervar define ww_originalHero;
+playervar define ww_hasEdited;
+playervar define PlayerInitialize;
+playervar define BotLookOrbIsHovered;
+playervar define CursorPosition;
+playervar define PlayerEffectsToDestroy;
+playervar define PlayerEffectsToDestroyControleInt;
+playervar define aa_ActiveLookPositionBot;
+playervar define aa_HostCursor;
+playervar define BotLookOrbGrabedBy;
+playervar define mode;
+playervar define BotLookPosition;
+playervar define _extendedPlayerCollection;
+playervar define getProperties;
+playervar define buttonModification;
+playervar define currActionID;
+playervar define destroyButtonID;
+playervar define lastMenuButtonID;
+playervar define buttons;
+playervar define newButton;
+playervar define menuOriginalFacing;
+playervar define menuFrame;
+playervar define isInMenu;
+playervar define modeEffectIds;
+
+enum ModeType {
+    Edit,
+    Camera,
+    Normal
+}
