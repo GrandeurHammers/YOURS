@@ -1,0 +1,120 @@
+import "../Vars/Global.ostw";
+
+disabled rule: "▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒【 Global 】▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒"
+{
+}
+
+void GlobalInit() "【 Subroutine 】▒▒  GlobalInit  ▒▒"
+{
+    if (SettingsDeveloper[1] > 0)
+    {
+        LogToInspector(<"▒▒▒▒ Initialize Start @<0>  ▒▒▒▒", TotalTimeElapsed()>);
+    }
+    GlobalVarInit();
+    GlobalHudInit();
+    GlobalEffectInit();
+    GlobalTextInit();
+    GlobalInitialize = Max(TotalTimeElapsed(), 0.1);
+}
+
+void GlobalVarInit() "【 Subroutine 】▒▒  GlobalVarInit  ▒▒"
+{
+    // Bots that are currently being modified 
+    BotsLockedMove = [];
+    // Breaking up to ensure Client doesn't crash
+    ValueCommunications = ["Acknowledge", "Attacking", "Countdown", "Defending", "Fall Back", "Go"];
+    ModifyVariable(ValueCommunications, Operation.AppendToArray, ["Going In", "Goodbye", "Group Up", "Hello", "Incoming"]);
+    ModifyVariable(ValueCommunications, Operation.AppendToArray, ["Need Healing", "Need Help", "No", "On My Way", "Press the Attack"]);
+    ModifyVariable(ValueCommunications, Operation.AppendToArray, ["Push Forward", "Ready", "Sorry", "Thanks", "Ultimate Status"]);
+    ModifyVariable(ValueCommunications, Operation.AppendToArray, ["With You", "Yes", "You Are Welcome"]);
+    ValueModesString = ["Camera", "Edit", "Normal"];
+    ValueButtonString = [<"<0>", Button.PrimaryFire>, <"<0>", Button.SecondaryFire>, <"<0>", Button.Ability1>, <"<0>", Button.Ability2>, <"<0>", Button.Ultimate>, <"<0>", Button.Interact>, <"<0>", Button.Jump>, <"<0>", Button.Crouch>, <"<0>", Button.Melee>, <"<0>", Button.Reload>];
+    ValueActionsAnyString = ["Change Hero", "Change Team", "Kill", "Respawn", "Resurrect", "Teleport"];
+    ValueActionsEditString = ["Change Hero", "Change Team", "Create", "Set Aim", "Pick up ", "Drop", "Remove", "Teleport", "Select"];
+    ValueActionsNormalString = ValueActionsAnyString;
+    ValueActionsCameraString = ValueActionsAnyString;
+    GlobalVarSlotSetInit();
+    GlobalWorkshopSettingInit();
+    GlobalInspectorSetInit();
+}
+
+void GlobalEffectInit() "【 Subroutine 】▒▒  GlobalEffectInit"
+{
+}
+
+void GlobalTextInit() "【 Subroutine 】▒▒  GlobalTextInit"
+{
+}
+
+void GlobalHudInit() "【 Subroutine 】▒▒  GlobalHudInit"
+{
+}
+
+
+void GlobalVarSlotSetInit() "【 Subroutine 】▒▒  GlobalVarSlotSetInit"
+{
+    // [Team 1, Team 2, Team All]
+    TeamSizes = [NumberOfSlots(Team.Team1), NumberOfSlots(Team.Team2), NumberOfSlots(Team.All)];
+    // [Team 1, Team 2, Team All]
+    NumberOfOpenSlots = [TeamSizes[0] - CountOf(AllPlayers(Team.Team1)), TeamSizes[1] - CountOf(AllPlayers(Team.Team2)), TeamSizes[2] - CountOf(AllPlayers(Team.All))];
+}
+
+void GlobalWorkshopSettingInit() "【 Subroutine 】▒▒  GlobalWorkshopSettingInit"
+{
+    BindingsAction = [];
+    SettingsAll[17] = WorkshopSettingReal("Your Overwatch Utility Repositioning System ", "Version", 1, 0, 2, 0);
+    SettingsCredits[0] = WorkshopSettingCombo("Made By Grandeur Hammers", "Join our discord!", 0, ["bit.ly/GHGAMES", "grandeurhammers.com/discord"], 0);
+    SettingsAll[0] = WorkshopSettingCombo("Interaction Modes", "Edit Mode", 0, ["Interact", "Default Key = F"], 0);
+    SettingsAll[1] = WorkshopSettingCombo("Interaction Modes", "Camera Mode", 0, ["Ability 1 + Interact", "Default Keys = Left Shift + F"], 1);
+    SettingsAll[2] = WorkshopSettingCombo("Interaction Modes", "Normal Mode (Exit other modes)", 0, ["Interact", "Default Button =  F"], 2);
+    SettingsAll[3] = WorkshopSettingCombo("Actions", "Create Bot (Edit Mode Only)", 0, ["Primary Fire", "Default Button = Left Mouse"], 0);
+    SettingsAll[4] = WorkshopSettingCombo("Actions", "Move Bot (Edit Mode Only)", 0, ["Hold Secondary Fire + Drag", "Default Button = Right Mouse"], 1);
+    SettingsAll[5] = WorkshopSettingCombo("Actions", "Change Hero of Bot (Edit Mode Only)", 0, ["Reload", "Default Button = R"], 2);
+    SettingsAll[6] = WorkshopSettingCombo("Actions", "Change Team of Bot (Edit Mode Only)", 0, ["Melee", "Default Button = V"], 3);
+    SettingsAll[7] = WorkshopSettingCombo("Actions", "Remove Bot (Edit Mode Only)", 0, ["Ultimate", "Default Button = Q"], 4);
+    SettingsAll[8] = WorkshopSettingCombo("Player Actions", "Change Your Hero", 0, ["Ability 1 + Reload", "Default Buttons = Left Shift + R"], 1);
+    SettingsAll[9] = WorkshopSettingCombo("Player Actions", "Open Menu (Edit & Camera Mode Only)", 0, ["Ability 2", "Default Buttons = E"], 2);
+    SettingsAll[10] = WorkshopSettingCombo("Movment Controls", "Fly Down", 0, ["Hold Crouch", "Default Button = Left Ctrl"], 0);
+    SettingsAll[11] = WorkshopSettingCombo("Communication Wheel", "Open Support Role Menu (Edit Mode Only)", 0, ["\"Need Healing\"", "Default Button = X"], 0);
+    SettingsAll[12] = WorkshopSettingCombo("Communication Wheel", "Open Tank Role Menu (Edit Mode Only)", 0, ["\"Defending\"", "Default Buttons = This One's on you to set "], 1);
+    SettingsAll[13] = WorkshopSettingCombo("Communication Wheel", "Open Damage Role Menu (Edit Mode Only)", 0, ["\"Attacking\"", "Default Button = Elo Hell"], 2);
+    SettingsAll[14] = WorkshopSettingCombo("Actions", "Move Bot's Aim Orb  (Edit Mode Only)", 0, ["Hold Secondary Fire + Drag", "Default Button = Right Mouse"], 5);
+    SettingsAll[15] = WorkshopSettingCombo("Communication Wheel", "Destory All bots (Edit Mode Only)", 0, ["\"Goodbye\"", "You will be prompted to confirm"], 3);
+    // [Inspector Enabled, Logs Enabled ]
+    SettingsDeveloper = [WorkshopSettingToggle("Developer Settings", "Inspector Enabled", false, 0), WorkshopSettingCombo("Developer Settings", "Logs Enabled", 0, ["None", "Actions", "Errors", "System", "All"], 1), null];
+    SettingsAll[16] = WorkshopSettingCombo("Movment Controls", "Fly Up", 0, ["Hold Jump", "Default Button = Space"], 1);
+}
+
+void GlobalBindingsButtonSetInit() "【 Subroutine 】▒▒  GlobalBindingsButtonSet ▒▒"
+{
+}
+
+void GlobalBindingsActionSetInit() "【 Subroutine 】▒▒  GlobalBindingsActionSet ▒▒"
+{
+}
+
+void GlobalInspectorSetInit() "【 Subroutine 】▒▒  GlobalInspectorSet ▒▒"
+{
+    if (SettingsDeveloper[0] == true)
+    {
+        EnableInspectorRecording();
+        if (SettingsDeveloper[1] == true)
+        {
+            LogToInspector(<"▒▒▒▒ @<0> Inspector Enabled ▒▒▒▒", TotalTimeElapsed()>);
+        }
+    }
+    else
+    {
+        if (ww_botHeroes[1] == true)
+        {
+            LogToInspector(<"▒▒▒▒ @<0> Inspector Disabled ▒▒▒▒", TotalTimeElapsed()>);
+        }
+        DisableInspectorRecording();
+    }
+}
+
+rule: "【 Initialize 】▒  Global  ▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒"
+if (GlobalInitialize == false)
+{
+    GlobalInit();
+}
