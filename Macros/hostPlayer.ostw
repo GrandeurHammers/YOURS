@@ -49,4 +49,8 @@ define grabInWorldText() : CreateInWorldText(
 
 define eyePositionHP() : EyePosition(HP());
 Vector cameraEyePosition() : eyePositionHP() + facingDirectionHP() * 1;
+Vector cameraLookPosition() : eyePositionHP() + facingDirectionHP();
+
+
+define hasSpawnedHP(): HasSpawned(HP());
 
