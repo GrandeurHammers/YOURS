@@ -1,0 +1,83 @@
+import "./Vars/Global.ostw";
+import "./Vars/Player.ostw";
+import "./Macros/hostPlayer.ostw";
+
+
+
+
+void abilitiesOff() "Abilities Off" {
+    SetAbility1Enabled(HP(), false);
+    SetAbility2Enabled(HP(), false);
+    SetPrimaryFireEnabled(HP(), false);
+    SetSecondaryFireEnabled(HP(), false);
+    SetUltimateAbilityEnabled(HP(), false);
+    SetMeleeEnabled(HP(), false);
+    SetJumpEnabled(HP(), false);
+    SetCrouchEnabled(HP(), false);
+}
+
+void abilitiesOn() "Abilities On" {
+    SetAbility1Enabled(HP(), true);
+    SetAbility2Enabled(HP(), true);
+    SetPrimaryFireEnabled(HP(), true);
+    SetSecondaryFireEnabled(HP(), true);
+    SetUltimateAbilityEnabled(HP(), true);
+    SetMeleeEnabled(HP(), true);
+    SetJumpEnabled(HP(), true);
+    SetCrouchEnabled(HP(), true);
+}
+
+
+
+// void createSelectionEffect() "Create Selection Effect"
+// {
+//     ModifyVariable(modeEffectIds, Operation.AppendToArray, LastTextID());
+//     textBudget -= 1;
+//     CreateInWorldText(FilteredArray(EventPlayer(), TotalTimeElapsed() % 0.032 >= 0.016), "▲", UpdateEveryFrame(EyePosition(EventPlayer()) + 100 * (AngleDifference(HorizontalAngleFromDirection(FacingDirectionOf(EventPlayer())), HorizontalAngleFromDirection(menuOriginalFacing)) * CrossProduct(FacingDirectionOf(EventPlayer()), DirectionFromAngles(HorizontalAngleFromDirection(FacingDirectionOf(EventPlayer())), VerticalAngleFromDirection(FacingDirectionOf(EventPlayer())) - 90)) + (AngleDifference(VerticalAngleFromDirection(FacingDirectionOf(EventPlayer())), VerticalAngleFromDirection(menuOriginalFacing)) - 0.2) * DirectionFromAngles(HorizontalAngleFromDirection(FacingDirectionOf(EventPlayer())), VerticalAngleFromDirection(FacingDirectionOf(EventPlayer())) - 90) + 3 * FacingDirectionOf(EventPlayer()))), 3, Clipping.DoNotClip, InworldTextRev.VisibleToPositionStringAndColor, Color.White, Spectators.DefaultVisibility);
+//     ModifyVariable(modeEffectIds, Operation.AppendToArray, LastTextID());
+//     textBudget -= 1;
+// }
+// void MakeSelectionCusor(Icon icon, ref define text)
+// {
+//     CreateHudText(
+//         VisibleTo: AllPlayers(),
+//         Header   : IconString(icon),
+//         Text     : text,
+//         TextColor: Color.SkyBlue
+//     );
+// }
+define allBotsArray() : FilteredArray(AllPlayers(Team.All), ArrayElement() != HP() && IsDummyBot());
+void HostModeEditEnter() "【 Subroutine 】▒▒  HostModeEditEnter ▒▒"
+{
+    HP().mode = ModeType.Edit;
+    SmallMessage(HP(), "Edit Mode");
+}
+
+void PlayerModeEditExit() "【 Subroutine 】▒▒  PlayerModeEditExit ▒▒"
+{
+    
+}
+
+rule: "Enter Edit Mode"
+if(modeIsSet())
+if (inNormal())
+if(!btnHeld(Button.Ability1))
+if(btnHeld(Button.Interact))
+{
+    HP().mode = ModeType.Edit;
+    abilitiesOff();
+    if(!isAliveHP()) {
+      Respawn(HP());
+    }
+    MinWait();
+}
+
+rule: "Enter Camera Mode"
+if (!inCamera())
+if(btnHeld(Button.Ability1))
+if(btnHeld(Button.Interact))
+{
+    HP().mode = ModeType.Camera;
+    abilitiesOff();
+    MinWait();
+}
