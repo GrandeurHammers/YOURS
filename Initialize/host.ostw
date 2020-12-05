@@ -1,0 +1,41 @@
+import "../Vars/Global.ostw";
+import "../Vars/Player.ostw";
+import "../Macros/hostPlayer.ostw";
+
+disabled rule: "▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒【 Host 】▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒"
+{
+}
+
+void HostInit() "【 Subroutine 】▒▒  HostInit  ▒▒"
+{
+    HostVarInit();
+    HostHudInit();
+    HostEffectsInit();
+    HostTextInit();
+    HP().HostInitialize = Max(TotalTimeElapsed(), 0.1);
+}
+
+void HostVarInit() "【 Subroutine 】▒▒  HostVarInit  ▒▒"
+{
+    HP().mode = ModeType.Normal;
+    HP().placementDistance = 12;
+}
+
+void HostEffectsInit() "【 Subroutine 】▒▒  HostEffectInit  ▒▒"
+{
+
+}
+
+void HostTextInit() "【 Subroutine 】▒▒  HostTextInit  ▒▒"
+{
+}
+
+void HostHudInit() "【 Subroutine 】▒▒  HostHudInit  ▒▒"
+{
+}
+
+rule: "【 Initialize 】▒▒  Host  ▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒"
+if (HP().HostInitialize == false)
+{
+    HostInit();
+}
