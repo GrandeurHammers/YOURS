@@ -14,7 +14,6 @@ void GlobalDestroyEffects() "【 Subroutine 】▒▒  GlobalDestroyEffects  ▒
 
 
 rule: "【 Async Action 】▒▒  GlobalDestoryEffects  ▒▒"
-Event.OngoingPlayer
 if (EffectsToDestroy != [])
 {
     GlobalDestroyEffects();
