@@ -11,6 +11,5 @@ if (HP().HostInitialize == false)
 {
     HP().mode = ModeType.Normal;
     HP().placementDistance = 12;
-    HostInit();
     HP().HostInitialize = Max(TotalTimeElapsed(), 0.1);
 }
