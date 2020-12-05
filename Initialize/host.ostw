@@ -6,36 +6,11 @@ disabled rule: "▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒�
 {
 }
 
-void HostInit() "【 Subroutine 】▒▒  HostInit  ▒▒"
-{
-    HostVarInit();
-    HostHudInit();
-    HostEffectsInit();
-    HostTextInit();
-    HP().HostInitialize = Max(TotalTimeElapsed(), 0.1);
-}
-
-void HostVarInit() "【 Subroutine 】▒▒  HostVarInit  ▒▒"
-{
-    HP().mode = ModeType.Normal;
-    HP().placementDistance = 12;
-}
-
-void HostEffectsInit() "【 Subroutine 】▒▒  HostEffectInit  ▒▒"
-{
-
-}
-
-void HostTextInit() "【 Subroutine 】▒▒  HostTextInit  ▒▒"
-{
-}
-
-void HostHudInit() "【 Subroutine 】▒▒  HostHudInit  ▒▒"
-{
-}
-
 rule: "【 Initialize 】▒▒  Host  ▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒"
 if (HP().HostInitialize == false)
 {
+    HP().mode = ModeType.Normal;
+    HP().placementDistance = 12;
     HostInit();
+    HP().HostInitialize = Max(TotalTimeElapsed(), 0.1);
 }
