@@ -1,0 +1,59 @@
+import "../Vars/Global.ostw";
+import "../Vars/Player.ostw";
+define  HP() : HostPlayer();
+define isHP() : HP() == EventPlayer();
+ModeType HPMode() : HostPlayer().mode;
+define btnHeld(Button button) : IsButtonHeld(HP(), button);
+define btnNotHeld(Button button) : !IsButtonHeld(HP(), button);
+define btnOrBtnHeld(Button a, Button b): btnHeld(a) || btnHeld(b);
+define btnAndBtnHeld(Button a, Button b): btnHeld(a) && btnHeld(b);
+define btnAndNotBtnHeld(Button held, Button notHeld): btnHeld(held) && !btnHeld(notHeld);
+define buttonHeldJumpOrCrouch(): btnOrBtnHeld(Button.Crouch, btnHeld(Button.Jump));
+define enterEditModeBtns() : btnAndNotBtnHeld(Button.Interact, Button.Ability1);
+define enterCameraModeBtns() : btnAndBtnHeld(Button.Interact, Button.Ability1);
+define enterNormalModeBtns() : btnHeld(Button.Interact);
+define inMode(ModeType mode) : HP().mode == mode;
+define modeIsSet() : HP().mode == true; 
+define inNormal() : inMode(ModeType.Normal);
+define inEdit() : inMode(ModeType.Edit);
+define inCamera() : inMode(ModeType.Camera);
+define notInMode(ModeType mode) : HP().mode != mode;
+define notInNormal() : notInMode(ModeType.Normal);
+define notInEdit() : notInMode(ModeType.Edit);
+define notCamera() : notInMode(ModeType.Camera);
+define menuOpen() : HP().isInMenu;
+define existsHP() : EntityExists(HP());
+
+define throttleOfHP() : ThrottleOf(HP());
+// define throttleOfIsGreater_EP(define number) : ThrottleOf(EventPlayer());
+define velocityOfHP() : VelocityOf(HP());
+define speedOfHP() : SpeedOf(HP());
+define facingDirectionHP() : FacingDirectionOf(HP());
+
+define speedOfIsGreaterHP(define number) : speedOfHP() > number;
+
+define slotOfHP() : SlotOf(HP());
+define pointerEffect(): CreateEffect(inEdit() ? HP() : [], Effect.Sphere, Color.Green, UpdateEveryFrame(RayCastHitPosition(HP().noclipPosition, HP().noclipPosition + FacingDirectionOf(HP()) * HP().placementDistance, AllPlayers(Team.All), HP(), true)), 0.05, EffectRev.VisibleToPositionAndRadius);
+define showDropButton() : inEdit() && HP().grabbedBot == true && !btnHeld(Button.Ability1);
+define grabInWorldText() : CreateInWorldText(
+    VisibleTo: showDropButton() ? HP() : [], 
+    Header: <"<0> DROP", InputBindingString(Button.PrimaryFire)>,
+    Position: HP().grabbedBot, 1,
+    Clipping: Clipping.DoNotClip, 
+    Reevaluation : InworldTextRev.VisibleToPositionAndString,
+    TextColor: Color.White,
+    Spectators: Spectators.DefaultVisibility
+);
+
+
+
+
+// define throttleOf_EP() : ThrottleOf(EventPlayer());
+// define throttleOfIsGreater_EP(define number) : ThrottleOf(EventPlayer());
+
+// define velocityOf_EP() : VelocityOf(EventPlayer());
+// define speedOf_EP() : SpeedOf(EventPlayer());
+
+// define speedOfIsGreater_EP(define number) : speedOf_EP() > number;
+
+// define slotOfEP() : SlotOf(EventPlayer());
