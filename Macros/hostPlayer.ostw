@@ -47,15 +47,6 @@ define grabInWorldText() : CreateInWorldText(
     Spectators: Spectators.DefaultVisibility
 );
 
+define eyePositionHP() : EyePosition(HP());
+Vector cameraEyePosition() : eyePositionHP() + facingDirectionHP() * 1;
 
-
-
-// define throttleOf_EP() : ThrottleOf(EventPlayer());
-// define throttleOfIsGreater_EP(define number) : ThrottleOf(EventPlayer());
-
-// define velocityOf_EP() : VelocityOf(EventPlayer());
-// define speedOf_EP() : SpeedOf(EventPlayer());
-
-// define speedOfIsGreater_EP(define number) : speedOf_EP() > number;
-
-// define slotOfEP() : SlotOf(EventPlayer());
