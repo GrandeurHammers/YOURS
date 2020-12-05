@@ -1,54 +1,50 @@
 import "./Vars/Global.ostw";
 import "./Vars/Player.ostw";
-import "./utils/targetEventPlayer.ostw";
+import "./Macros/hostPlayer.ostw";
 
-define ncIsActive(): (EventPlayer().mode != false && EventPlayer().mode == ModeType.Normal);
-define propulsionCheck(): jumpOrCrouchHeld_EP() || throttleOf_EP() != Vector(0, 0, 0);
+define propulsionCheck(): buttonHeldJumpOrCrouch() || throttleOfHP() != Vector(0, 0, 0);
 
 rule: "▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒【Josbird's NoClip Module】▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒"
 {
 }
 
 rule: "Start noclipping"
-
-Event.OngoingPlayer
-if (ncIsActive())
+if (modeIsSet())
+if(inEdit())
 {
-    SetGravity(EventPlayer(), 0);
-    DisableMovementCollisionWithEnvironment(EventPlayer(), true);
-    DisableMovementCollisionWithPlayers(EventPlayer());
-    SetMoveSpeed(EventPlayer(), 0);
+    SetGravity(HP(), 0);
+    DisableMovementCollisionWithEnvironment(HP(), true);
+    DisableMovementCollisionWithPlayers(HP());
+    SetMoveSpeed(HP(), 0);
 }
 
 rule: "Stop noclipping"
-Event.OngoingPlayer
-if (!ncIsActive())
+if (modeIsSet())
+if(!inEdit())
 {
-    SetGravity(EventPlayer(), 100);
-    EnableMovementCollisionWithEnvironment(EventPlayer());
-    EnableMovementCollisionWithPlayers(EventPlayer());
-    SetMoveSpeed(EventPlayer(), 100);
+    SetGravity(HP(), 100);
+    EnableMovementCollisionWithEnvironment(HP());
+    EnableMovementCollisionWithPlayers(HP());
+    SetMoveSpeed(HP(), 100);
 }
 
 rule: "Noclip propulsion"
-Event.OngoingPlayer
-if (ncIsActive())
+if(inEdit())
 if (
     (propulsionCheck()) == true)
 {
-    ApplyImpulse(EventPlayer(), velocityOf_EP() * -1, SpeedOf(EventPlayer()) * 0.03, Relative.ToWorld, ContraryMotion.Incorporate);
-    ApplyImpulse(EventPlayer(), Normalize(FacingDirectionOf(EventPlayer()) * ZOf(ThrottleOf(EventPlayer())) + WorldVectorOf(Left(), EventPlayer(), LocalVector.Rotation) * XOf(ThrottleOf(EventPlayer())) + Up() * (IsButtonHeld(EventPlayer(), ButtonValue(Button.Jump)) - IsButtonHeld(EventPlayer(), ButtonValue(Button.Crouch)))), (60 + 400 * IsButtonHeld(EventPlayer(), ButtonValue(Button.Reload)) - SpeedOf(EventPlayer())) / 62.5, Relative.ToWorld, ContraryMotion.Incorporate);
+    ApplyImpulse(HP(), velocityOfHP() * -1, speedOfHP() * 0.03, Relative.ToWorld, ContraryMotion.Incorporate);
+    ApplyImpulse(HP(), Normalize(facingDirectionHP() * ZOf(throttleOfHP()) + WorldVectorOf(Left(), HP(), LocalVector.Rotation) * XOf(throttleOfHP()) + Up() * (btnHeld(Button.Jump)) - btnHeld(Button.Crouch)), (60 + 400 * btnHeld(Button.Reload) - speedOfHP()) / 62.5, Relative.ToWorld, ContraryMotion.Incorporate);
     MinWait();
     LoopIfConditionIsTrue();
 }
 
 rule: "Noclip air resistance"
-Event.OngoingPlayer
-if (ncIsActive())
+if(inEdit())
 if (!propulsionCheck())
-if (speedOfIsGreater_EP(0.01))
+if (speedOfIsGreaterHP(0.01))
 {
-    ApplyImpulse(EventPlayer(), VelocityOf(EventPlayer()) * -1, SpeedOf(EventPlayer()) * 0.06, Relative.ToWorld, ContraryMotion.Incorporate);
+    ApplyImpulse(HP(), velocityOfHP() * -1, speedOfHP() * 0.06, Relative.ToWorld, ContraryMotion.Incorporate);
     MinWait();
     LoopIfConditionIsTrue();
 }
