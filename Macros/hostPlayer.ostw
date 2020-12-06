@@ -3,12 +3,12 @@ import "../Vars/Player.ostw";
 define  HP() : HostPlayer();
 define isHP() : HP() == EventPlayer();
 ModeType HPMode() : HostPlayer().mode;
-define btnHeld(Button button) : IsButtonHeld(HP(), button);
-define btnNotHeld(Button button) : !IsButtonHeld(HP(), button);
+define btnHeld(Button button) : IsButtonHeld(HP(), button) == true;
+define btnNotHeld(Button button) : IsButtonHeld(HP(), button) == false;
 define btnOrBtnHeld(Button a, Button b): btnHeld(a) || btnHeld(b);
 define btnAndBtnHeld(Button a, Button b): btnHeld(a) && btnHeld(b);
 define btnAndNotBtnHeld(Button held, Button notHeld): btnHeld(held) && !btnHeld(notHeld);
-define buttonHeldJumpOrCrouch(): btnOrBtnHeld(Button.Crouch, btnHeld(Button.Jump));
+define buttonHeldJumpOrCrouch(): btnOrBtnHeld(Button.Crouch, Button.Jump);
 define enterEditModeBtns() : btnAndNotBtnHeld(Button.Interact, Button.Ability1);
 define enterCameraModeBtns() : btnAndBtnHeld(Button.Interact, Button.Ability1);
 define enterNormalModeBtns() : btnHeld(Button.Interact);
@@ -48,8 +48,8 @@ define grabInWorldText() : CreateInWorldText(
 );
 
 define eyePositionHP() : EyePosition(HP());
-Vector cameraEyePosition() : eyePositionHP() + facingDirectionHP() * 1;
-Vector cameraLookPosition() : eyePositionHP() + facingDirectionHP();
+Vector cameraEyePosition() : eyePositionHP() + facingDirectionHP() * 1.5;
+Vector cameraLookPosition() : eyePositionHP() + facingDirectionHP() * 2;
 
 
 define hasSpawnedHP(): HasSpawned(HP());
