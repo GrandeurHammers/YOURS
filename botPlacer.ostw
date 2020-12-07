@@ -1,0 +1,162 @@
+import "./Vars/Global.ostw";
+import "./Vars/Player.ostw";
+import "./Macros/hostPlayer.ostw";
+rule: "▒【Bot Placement Module (Adapted from TPEGO by Provoxin)】▒"
+{}
+void BotCreate() "【 Subroutine 】▒▒  BotCreate  ▒▒"
+{
+            CreateDummyBot(
+                HP().nextBotHero,
+                HP().nextBotTeam,
+                -1,
+                placementPositionHP()
+                , null);
+        
+        HP().hoverTarget = LastCreatedEntity();
+}
+define remainingSlots(Team team): NumberOfSlots(team) - CountOf(AllPlayers(team));
+define ensureTeamHasOpenSlot(Team team): remainingSlots(team) > 0 ? team : remainingSlots(OppositeTeamOf(team)) > 0 ? OppositeTeamOf(team) : Team.All;
+rule: "Create bot"
+if (inEdit())
+if (btnHeld(Button.PrimaryFire))
+{
+    if(remainingSlots(HP().nextBotTeam) <= 0 && remainingSlots(OppositeTeamOf(HP().nextBotTeam)) > 0) {
+        HP().fullTeam = HP().nextBotTeam;
+        HP().nextBotTeam = OppositeTeamOf(HP().nextBotTeam);
+        if(remainingSlots(HP().nextBotTeam) > 0) {
+            SmallMessage(HP(), <"<0> is Full Swapping to <1>", HP().fullTeam, HP().nextBotTeam>);
+        }
+    }
+    if(remainingSlots(HP().nextBotTeam) > 0) {
+        CreateDummyBot(
+                HP().nextBotHero,
+                HP().nextBotTeam,
+                -1,
+                placementPositionHP()
+                , DirectionTowards(placementPositionHP(), eyePositionHP()));
+        
+        HP().targetedDummy = LastCreatedEntity();
+        WaitUntil(HP().targetedDummy.initialize == true, 3);
+        SetHostSelectionArray();
+    }
+    else {
+       SmallMessage(HP(), <"Both Teams Are Full!", HP().fullTeam, HP().nextBotTeam>);
+    }
+}
+
+rule: "onHover Selection Entity"
+if (inEdit())
+if(HP().selectionArray != EmptyArray())
+if(selectionEntitiesInLOS() != EmptyArray())
+if(HP().hostSelectedTarget == false)
+{
+    HP().hostHoverTarget = HP().hostSelectedTarget == true ? HP().hostSelectedTarget : hoverTargetHP();
+    MinWait();
+    LoopIfConditionIsTrue();
+}
+
+rule: "Grab Hover Target"
+if(btnHeld(Button.SecondaryFire) == true )
+if (inEdit())
+if(HP().hostHoverTarget == true)
+{
+    HP().hostSelectedTarget = HP().hostHoverTarget;
+    HP().hostHoverTarget = null;
+    if(HP().hostSelectedTarget[2] == EntityType.DummyBot) {
+      SetGravity(HP().hostSelectedTarget[1], 0);
+      StopForcingPlayerPosition(HP().hostSelectedTarget[1]);
+      StartForcingPlayerPosition(HP().hostSelectedTarget[1],
+      HP().hostSelectedTarget[1] == EvaluateOnce(HP().hostSelectedTarget[1]) ? UpdateEveryFrame(placementPositionHP()) : EvaluateOnce(HP().hostSelectedTarget[1]).botForcedPosition, true);
+    }
+    
+}
+
+rule: "Drop Selected Target"
+if(btnHeld(Button.SecondaryFire) == false )
+if (inEdit())
+if(HP().hostSelectedTarget == true)
+{
+    if(HP().hostSelectedTarget[2] == EntityType.DummyBot) {
+      HP().hostSelectedTarget[1].botForcedPosition = placementPositionHP();
+      StartForcingPlayerPosition(HP().hostSelectedTarget[1], HP().hostSelectedTarget[1].botForcedPosition, false);
+      HP().hostSelectedTarget[1].botLookPosition = EyePosition(HP().hostSelectedTarget[1]) + DirectionTowards(EyePosition(HP().hostSelectedTarget[1]), HP().hostSelectedTarget[1].botLookPosition) * 3; 
+    } else {
+        HP().hostSelectedTarget[1].botLookPosition = placementPositionHP();
+    }
+    HP().hostHoverTarget = HP().hostSelectedTarget;
+    HP().hostSelectedTarget = null;
+    MinWait();
+    SetHostSelectionArray();
+    
+}
+
+rule: "Swap Bot Teams"
+if (inEdit())
+if(btnHeld(Button.Melee) == true )
+if(HP().hostHoverTarget == true)
+if(HP().hostHoverTarget[2] == EntityType.DummyBot)
+if(HP().botTeamSwapData == false)
+{
+    if(remainingSlots(OppositeTeamOf(TeamOf(HP().hostHoverTarget[1]))) > 0) {
+      HP().botTeamSwapData = [HeroOf(HP().hostHoverTarget[1]), OppositeTeamOf(TeamOf(HP().hostHoverTarget[1])), HP().hostHoverTarget[1].botForcedPosition, HP().hostHoverTarget[1].botLookPosition, SlotOf(HP().hostHoverTarget[1])];
+      DestroyDummyBot(TeamOf(HP().hostHoverTarget[1]), SlotOf(HP().hostHoverTarget[1])); 
+      CreateDummyBot(
+                HP().botTeamSwapData[0],
+                HP().botTeamSwapData[1],
+                -1,
+                HP().botTeamSwapData[2]
+                , HP().botTeamSwapData[3]);
+        HP().targetedDummy = LastCreatedEntity();
+        WaitUntil(HP().targetedDummy.initialize == true, .100);
+        LastCreatedEntity().botForcedPosition = HP().botTeamSwapData[2];
+        LastCreatedEntity().botLookPosition = HP().botTeamSwapData[3];
+        SetHostSelectionArray();
+        MinWait();
+        HP().botTeamSwapData = null;
+    }
+    else {
+        SmallMessage(HP(), <"<0> is FUll!", OppositeTeamOf(TeamOf(HP().hostHoverTarget[1]))>);
+    }
+}
+
+rule: "Remove Bot"
+if (inEdit())
+if(btnHeld(Button.Ultimate) == true )
+if(HP().hostHoverTarget == true)
+if(HP().hostHoverTarget[2] == EntityType.DummyBot)
+{
+    DestroyDummyBot(TeamOf(HP().hostHoverTarget[1]), SlotOf(HP().hostHoverTarget[1]));
+    MinWait();
+    SetHostSelectionArray();
+}
+
+rule: "Swap Bot Hero"
+if (inEdit())
+if(btnHeld(Button.Ultimate) == true )
+if(HP().hostHoverTarget == true)
+if(HP().hostHoverTarget[2] == EntityType.DummyBot)
+{
+    HP().botTeamSwapData = [HeroOf(HP().hostHoverTarget[1]), TeamOf(HP().hostHoverTarget[1]), HP().hostHoverTarget[1].botForcedPosition, HP().hostHoverTarget[1].botLookPosition, SlotOf(HP().hostHoverTarget[1])];
+    HP().hostSwapHeroData = [HeroOf(HP()), PositionOf(HP()), FacingDirectionOf(HP())];
+    PreloadHero(HP(), HP().hostHoverTarget[1]);
+    MinWait();
+    ForcePlayerHero(HP(), HP().hostHoverTarget[1]);
+    DestroyDummyBot(TeamOf(HP().hostHoverTarget[1]), SlotOf(HP().hostHoverTarget[1]));
+    SetAllowedHeroes(HP(), FilteredArray(AllowedHeroes(HP()), ArrayElement() != HeroOf(HP())));
+    Wait(.250);
+    ResetHeroAvailability(HP());
+    PreloadHero(HP(), HP().hostSwapHeroData[0]);
+    WaitUntil(HasSpawned(HP()), 9999);
+    CreateDummyBot(
+        Hero: HP().botTeamSwapData[0],
+        Team: HP().botTeamSwapData[1],
+        Slot: HP().botTeamSwapData[4],
+        Position: HP().botTeamSwapData[2],
+        Facing: HP().botTeamSwapData[3]);
+    HP().targetedDummy = LastCreatedEntity();
+    WaitUntil(HasSpawned(HP().targetedDummy), 9999);
+    SetHostSelectionArray();
+}
+
+
+
