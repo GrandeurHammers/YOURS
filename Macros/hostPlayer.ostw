@@ -99,7 +99,7 @@ FirstOf(
             DirectionTowards(ArrayElement()[0], eyePositionHP())
                 )
         ),
-        DistanceBetween(eyePositionHP() + facingDirectionHP() * DistanceBetween(eyePositionHP(), ArrayElement()), ArrayElement()) <= 2)
+        DistanceBetween(eyePositionHP() + facingDirectionHP() * DistanceBetween(eyePositionHP(), ArrayElement()), ArrayElement()) <= 5)
     );
 
 define hoverTargetHP(): closestSelectionEntity(selectionEntitiesInLOS());
