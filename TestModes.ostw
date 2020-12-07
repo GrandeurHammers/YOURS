@@ -1,0 +1,9 @@
+import "customGameSettings.lobby";
+import "./Vars/Global.ostw";
+import "./Vars/Player.ostw";
+import "./Initialize/global.ostw";
+import "./Initialize/host.ostw";
+import "./Initialize/bot.ostw";
+import "modeRules.ostw";
+import "noClipModule.ostw";
+import "botPlacer.ostw";
