@@ -2,14 +2,148 @@ import "../Vars/Global.ostw";
 import "../Vars/Player.ostw";
 import "../Macros/hostPlayer.ostw";
 
+define remainingSlotCount() : 12 - CountOf(AllPlayers(Team.All));
+define canSeeCusorHudHP() : inEdit() && !HP().isInMenu;
+define showHost() : canSeeCusorHudHP() ? HP() : [];
+define canSwap(Team team): NumberOfSlots(team) - CountOf(AllPlayers(team)) > 0;
+define botOppositeTeam(): OppositeTeamOf(TeamOf(HP().hostHoverTarget[1]));
+define topHudCreate() : HP().hostSelectedTarget == false && HP().hostHoverTarget == false && remainingSlotCount() > 0;
+define showCreate(): HP().hostSelectedTarget == false && HP().hostHoverTarget == false;
+define showMove(): HP().hostSelectedTarget == false && HP().hostHoverTarget == true;
+define showRemove() : HP().hostSelectedTarget == false && HP().hostHoverTarget == true && HP().hostHoverTarget[2] == EntityType.DummyBot;
+define showSwapTeam() : HP().hostSelectedTarget == false && HP().hostHoverTarget == true && HP().hostHoverTarget[2] == EntityType.DummyBot && canSwap(botOppositeTeam());
+define showSwapHero() : HP().hostSelectedTarget == false && HP().hostHoverTarget == true && HP().hostHoverTarget[2] == EntityType.DummyBot;
+
+// <"\n\n\n\n\n\n\n\n\n\n\n\n<0> CREATE BOT", InputBindingString(Button.PrimaryFire)>
 disabled rule: "▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒【 Host 】▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒"
 {
 }
-
+rule: "Change Hosts Hero"
+if(btnHeld(Button.Ability1))
+if(btnHeld(Button.Reload))
+{
+    HP().hostSwapHeroData = [PositionOf(HP()), facingDirectionHP()];
+    SetAllowedHeroes(HP(), FilteredArray(AllowedHeroes(HP()), ArrayElement() != HeroOf(HP())));
+    Wait(.250);
+    ResetHeroAvailability(HP());
+    WaitUntil(hasSpawnedHP(), 9999);
+    MinWait();
+    Teleport(HP(), HP().hostSwapHeroData[0]);
+    SetFacing(HP(), HP().hostSwapHeroData[1]);
+    MinWait();
+    HP().hostSwapHeroData = null;
+}
 rule: "【 Initialize 】▒▒  Host  ▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒"
-if (HP().HostInitialize == false)
+Event.OngoingPlayer
+if (HP().initialize == false)
+if(EventPlayer() == HP())
 {
     HP().mode = ModeType.Normal;
     HP().placementDistance = 12;
-    HP().HostInitialize = Max(TotalTimeElapsed(), 0.1);
+    
+    HP().nextBotTeam = Team.Team2;
+    HP().nextBotRole = Role.All;
+    HP().nextBotHero = RandomValueInArray(AllHeroes());
+
+    CreateHudText(
+        showHost() && showCreate(),
+            null,
+            null,
+            <"\n\n\n\n\n\n\n\n\n\n\n\n<0> CREATE BOT",
+            InputBindingString(Button.PrimaryFire)>,
+            Location.Top,
+            10,
+            null,
+            null,
+            Color.White,
+            HudTextRev.VisibleToAndString,
+            Spectators.DefaultVisibility
+    );
+    CreateHudText(
+        showHost() && showMove(),
+            null,
+            null,
+            <"\n\n\n\n\n\n\n\n\n\n\n\n<0> to Drag",
+            InputBindingString(Button.SecondaryFire)>,
+            Location.Top,
+            10,
+            null,
+            null,
+            Color.White,
+            HudTextRev.VisibleToAndString,
+            Spectators.DefaultVisibility
+    );
+    CreateHudText(
+        showHost() && showSwapTeam(),
+            null,
+            null,
+            <"\n[<0>] Swap to Team",
+            InputBindingString(Button.Melee)>,
+            Location.Top,
+            11,
+            null,
+            null,
+            Color.White,
+            HudTextRev.VisibleToAndString,
+            Spectators.DefaultVisibility
+    );
+    CreateHudText(
+        showHost() && showSwapHero(),
+            null,
+            null,
+            <"\n[<0>] Change Hero",
+            InputBindingString(Button.Reload) >,
+            Location.Top,
+            12,
+            null,
+            null,
+            Color.White,
+            HudTextRev.VisibleToAndString,
+            Spectators.DefaultVisibility
+    );
+    CreateHudText(
+        showHost() && showSwapHero(),
+            null,
+            null,
+            <"\n[<0>] Remove",
+            InputBindingString(Button.Ultimate) >,
+            Location.Top,
+            13,
+            null,
+            null,
+            Color.White,
+            HudTextRev.VisibleToAndString,
+            Spectators.DefaultVisibility
+    );
+    CreateHudText(
+        showHost(),
+            null,
+            null,
+            <"Host Mode <0>", HP().mode>,
+            Location.Left,
+            0,
+            null,
+            null,
+            Color.White,
+            HudTextRev.VisibleToAndString,
+            Spectators.DefaultVisibility
+    );
+
+    // CreateIcon(
+    //     VisibleTo: 
+    //     inEdit() &&
+    //     HP().hostSelectedTarget == false &&
+    //     HP().hostHoverTarget == true ?
+    //     HP() : [],
+    //     Position: HP().hostHoverTarget == true ? HP().hostHoverTarget[0] + hoverIconOffset(4) : placementPositionHP(),
+    //     Icon: Icon.ArrowDown,
+    //     Reevaluation: IconRev.VisibleToPositionAndColor,
+    //     IconColor: Color.Green, 
+    //     ShowWhenOffscreen: false
+    // );            
+  CreateHudText(HP(), <"Server Load: <0>%", ServerLoad()>, null, null, Location.Left, 1);
+  HP().initialize = true;
 }
+
+
+
