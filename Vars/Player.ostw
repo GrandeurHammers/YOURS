@@ -1,7 +1,5 @@
 playervar define isEditing;
 playervar define noclipPosition;
-playervar define grabbedBot;
-playervar define targetedDummy;
 playervar define placementDistance;
 playervar define isChangingBot;
 playervar define prevFacings;
@@ -16,7 +14,7 @@ playervar define aa_ActiveLookPositionBot;
 playervar define aa_HostCursor;
 playervar define BotLookOrbGrabedBy;
 playervar ModeType mode;
-playervar define BotLookPosition;
+
 playervar define _extendedPlayerCollection;
 playervar define isInMenu 127;
 playervar define menuFrame 126;
@@ -32,9 +30,37 @@ playervar define iter!;
 playervar define buttonModification 119;
 playervar define getProperties 118;
 playervar define modeEffectIds;
+playervar define modeChangeLocked;
+playervar Team botTeam;
+playervar Role botRole;
+playervar Hero botHero;
+playervar define grabbedBot;
+playervar define targetedDummy;
+playervar define hoverTarget;
+playervar define selectedTarget;
+playervar Team nextBotTeam;
+playervar Role nextBotRole;
+playervar Hero nextBotHero;
+playervar TargetType targetEntityType;
+playervar define botLookPosition;
+
+
+enum Role {
+    All,
+    Tank,
+    Damage,
+    Support
+}
+
+enum TargetType {
+    None,
+    DummyBot,
+    LookOrb
+}
 
 enum ModeType {
+    Init,
+    Normal,
     Edit,
-    Camera,
-    Normal
+    Camera
 }
