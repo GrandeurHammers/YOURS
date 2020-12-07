@@ -31,6 +31,7 @@ define velocityOfHP() : VelocityOf(HP());
 define speedOfHP() : SpeedOf(HP());
 define facingDirectionHP() : FacingDirectionOf(HP());
 
+
 define speedOfIsGreaterHP(define number) : speedOfHP() > number;
 
 define slotOfHP() : SlotOf(HP());
@@ -54,4 +55,26 @@ Vector cameraLookPosition() : eyePositionHP() + facingDirectionHP() * 2;
 
 
 define hasSpawnedHP(): HasSpawned(HP());
+
+
+define placementPositionHP(): RayCastHitPosition(
+            StartPOS: EyePosition(HP()),
+            EndPOS: EyePosition(HP()) + facingDirectionHP() * HP().placementDistance,
+            PlayersToInclude: AllPlayers(),
+            PlayersToExclude: HP(),
+            IncludePlayerOwnedObjects: false
+            );
+define oscillatePositive(define speed): AbsoluteValue(SineFromRadians(TotalTimeElapsed() * speed));
+define hoverTargetPosition(define speed = 30) : Vector(0, .5 + (.5 * oscillatePositive(speed)) , 0);
+
+define getTargetType(define target):
+  !target ? TargetType.None :
+   IsDummyBot(target) ?
+     TargetType.DummyBot :
+     TargetType.LookOrb;
+
+define onlyHoverTarget(): HP().hoverTarget == true && HP().selectedTarget == false;
+define hasSelectedTarget(): HP().selectedTarget == true;
+
+
 
