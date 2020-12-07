@@ -9,8 +9,7 @@ rule: "▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒�
 }
 
 rule: "Start noclipping"
-if (modeIsSet())
-if(inEdit())
+if (inEdit() || inCamera())
 {
     SetGravity(HP(), 0);
     DisableMovementCollisionWithEnvironment(HP(), true);
@@ -19,8 +18,7 @@ if(inEdit())
 }
 
 rule: "Stop noclipping"
-if (modeIsSet())
-if(!inEdit())
+if (inNormal())
 {
     SetGravity(HP(), 100);
     EnableMovementCollisionWithEnvironment(HP());
@@ -29,19 +27,20 @@ if(!inEdit())
 }
 
 rule: "Noclip propulsion"
-if(inEdit())
+if (inEdit() || inCamera())
 if (
     (propulsionCheck()) == true)
 {
     ApplyImpulse(HP(), velocityOfHP() * -1, speedOfHP() * 0.03, Relative.ToWorld, ContraryMotion.Incorporate);
-    ApplyImpulse(HP(), Normalize(facingDirectionHP() * ZOf(throttleOfHP()) + WorldVectorOf(Left(), HP(), LocalVector.Rotation) * XOf(throttleOfHP()) + Up() * (btnHeld(Button.Jump)) - btnHeld(Button.Crouch)), (60 + 400 * btnHeld(Button.Reload) - speedOfHP()) / 62.5, Relative.ToWorld, ContraryMotion.Incorporate);
+    ApplyImpulse(HostPlayer(), Normalize(FacingDirectionOf(HostPlayer()) * ZOf(ThrottleOf(HostPlayer())) + WorldVectorOf(Left(), HostPlayer(), LocalVector.Rotation) * XOf(ThrottleOf(HostPlayer())) + Up() * (IsButtonHeld(HostPlayer(), Button.Jump) - IsButtonHeld(HostPlayer(), Button.Crouch))), (60 + 400 * IsButtonHeld(HostPlayer(), Button.Reload) - SpeedOf(HostPlayer())) / 62.5, Relative.ToWorld, ContraryMotion.Incorporate);
+    
     MinWait();
     LoopIfConditionIsTrue();
 }
 
 rule: "Noclip air resistance"
-if(inEdit())
-if (!propulsionCheck())
+if (inEdit() || inCamera())
+if (!propulsionCheck()) 
 if (speedOfIsGreaterHP(0.01))
 {
     ApplyImpulse(HP(), velocityOfHP() * -1, speedOfHP() * 0.06, Relative.ToWorld, ContraryMotion.Incorporate);
