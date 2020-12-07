@@ -2,9 +2,6 @@ import "./Vars/Global.ostw";
 import "./Vars/Player.ostw";
 import "./Macros/hostPlayer.ostw";
 
-
-
-
 void abilitiesOff() "Abilities Off" {
     SetAbility1Enabled(HP(), false);
     SetAbility2Enabled(HP(), false);
@@ -58,26 +55,67 @@ void PlayerModeEditExit() "【 Subroutine 】▒▒  PlayerModeEditExit ▒▒"
     
 }
 
-rule: "Enter Edit Mode"
-if(modeIsSet())
-if (inNormal())
-if(!btnHeld(Button.Ability1))
+rule: "Enter Normal Mode"
+if(HP().modeChangeLocked == false)
 if(btnHeld(Button.Interact))
+if(btnNotHeld(Button.Ability1))
+if (inEdit() || inCamera())
+
 {
-    HP().mode = ModeType.Edit;
-    abilitiesOff();
-    if(!isAliveHP()) {
-      Respawn(HP());
-    }
-    MinWait();
+    EnableGameModeHud(HP());
+    EnableHeroHud(HP());
+    HP().modeChangeLocked = true ;
+    StopCamera(HP());
+    HP().mode = ModeType.Normal;
+    abilitiesOn();
+    WaitUntil(btnNotHeld(Button.Interact), 3);
+    HP().modeChangeLocked = false ;
 }
 
+rule: "Enter Edit Mode"
+if(HP().modeChangeLocked == false)
+if(btnHeld(Button.Interact))
+if(btnNotHeld(Button.Ability1))
+if (inNormal() || inCamera() || inInitMode())
+{
+    DisableGameModeHud(HP());
+    DisableHeroHud(HP());
+    HP().modeChangeLocked = true ;
+    HP().mode = ModeType.Edit;
+    abilitiesOff();
+    Resurrect(AllPlayers(Team.All));
+    WaitUntil(btnNotHeld(Button.Interact), 3);
+    HP().modeChangeLocked = false ;
+}
+
+
+define ModeCameraHP() : StartCamera(HP(), UpdateEveryFrame(cameraEyePosition()), UpdateEveryFrame(cameraLookPosition()), 128);
 rule: "Enter Camera Mode"
-if (!inCamera())
+if(HP().modeChangeLocked == false)
 if(btnHeld(Button.Ability1))
 if(btnHeld(Button.Interact))
+if (notCamera())
+
 {
+    DisableGameModeHud(HP());
+    DisableHeroHud(HP());
+    HP().modeChangeLocked = true ;
+    ModeCameraHP();
     HP().mode = ModeType.Camera;
     abilitiesOff();
-    MinWait();
+    Resurrect(AllPlayers(Team.All));
+    WaitUntil(btnNotHeld(Button.Interact), 3);
+    HP().modeChangeLocked = false ;
+}
+
+
+
+rule: "Interact to edit message"
+
+if (inNormal())
+if (hasSpawnedHP())
+{
+    SmallMessage(HP(), <"Press <0> to enter Edit Mode", InputBindingString(Button.Interact)>);
+    Wait(3, WaitBehavior.IgnoreCondition);
+    LoopIfConditionIsTrue();
 }
