@@ -68,6 +68,8 @@ if (inEdit() || inCamera())
     StopCamera(HP());
     HP().mode = ModeType.Normal;
     abilitiesOn();
+    HP().hostHoverTarget = null;
+    HP().hostSelectedTarget = null;
     WaitUntil(btnNotHeld(Button.Interact), 3);
     HP().modeChangeLocked = false ;
 }
@@ -80,11 +82,12 @@ if (inNormal() || inCamera() || inInitMode())
 {
     HP().hasEdited = false;
     DisableGameModeHud(HP());
-    DisableHeroHud(HP());
+    // DisableHeroHud(HP());
     HP().modeChangeLocked = true ;
     HP().mode = ModeType.Edit;
     abilitiesOff();
     Resurrect(AllPlayers(Team.All));
+    HP().selectionArray = getSelectionArray();
     WaitUntil(btnNotHeld(Button.Interact), 3);
     HP().modeChangeLocked = false ;
 }

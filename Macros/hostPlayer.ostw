@@ -1,5 +1,6 @@
 import "../Vars/Global.ostw";
 import "../Vars/Player.ostw";
+import "../SelectionEntityClass.ostw";
 define  HP() : HostPlayer();
 define isHP() : HP() == EventPlayer();
 ModeType HPMode() : HostPlayer().mode;
@@ -36,7 +37,7 @@ define speedOfIsGreaterHP(define number) : speedOfHP() > number;
 
 define slotOfHP() : SlotOf(HP());
 define pointerEffect(): CreateEffect(inEdit() ? HP() : [], Effect.Sphere, Color.Green, UpdateEveryFrame(RayCastHitPosition(HP().noclipPosition, HP().noclipPosition + FacingDirectionOf(HP()) * HP().placementDistance, AllPlayers(Team.All), HP(), true)), 0.05, EffectRev.VisibleToPositionAndRadius);
-define showDropButton() : inEdit() && HP().grabbedBot == true && !btnHeld(Button.Ability1);
+define showDropButton() : inEdit() && HP().hostSelectedTarget == true && !btnHeld(Button.Ability1);
 
 define isAliveHP() : IsAlive(HP());
 define grabInWorldText() : CreateInWorldText(
@@ -60,21 +61,63 @@ define hasSpawnedHP(): HasSpawned(HP());
 define placementPositionHP(): RayCastHitPosition(
             StartPOS: EyePosition(HP()),
             EndPOS: EyePosition(HP()) + facingDirectionHP() * HP().placementDistance,
-            PlayersToInclude: AllPlayers(),
-            PlayersToExclude: HP(),
+            PlayersToInclude: null,
+            PlayersToExclude: AllPlayers(),
             IncludePlayerOwnedObjects: false
             );
 define oscillatePositive(define speed): AbsoluteValue(SineFromRadians(TotalTimeElapsed() * speed));
-define hoverTargetPosition(define speed = 30) : Vector(0, .5 + (.5 * oscillatePositive(speed)) , 0);
+define hoverIconOffset(define speed = 2) : Vector(0, .500 + (.250 * oscillatePositive(speed)) , 0);
 
 define getTargetType(define target):
-  !target ? TargetType.None :
+  !target ? EntityType.None :
    IsDummyBot(target) ?
-     TargetType.DummyBot :
-     TargetType.LookOrb;
+     EntityType.DummyBot :
+     EntityType.LookOrb;
 
-define onlyHoverTarget(): HP().hoverTarget == true && HP().selectedTarget == false;
-define hasSelectedTarget(): HP().selectedTarget == true;
+define onlyHoverTarget(): HP().hostHoverTarget == true && HP().hostSelectedTarget == false;
+define hasSelectedTarget(): HP().hostSelectedTarget == true;
+
+define getAllBots():  FilteredArray(AllPlayers(Team.All), ArrayElement() != HP() == true);
+define  getSelectionBotArray(): MappedArray(getAllBots(), [PositionOf(ArrayElement()), ArrayElement(), EntityType.DummyBot]);
+define  getSelectionLookOrbArray(): MappedArray(getAllBots(), [ArrayElement().botLookPosition, ArrayElement(), EntityType.LookOrb]);
+
+define  setupSelectionArray(): Append(getSelectionBotArray(), getSelectionLookOrbArray());
+// define selectionArrayHP(): 
+
+define  getSelectionArray(): FilteredArray(setupSelectionArray(), ArrayElement()[0] == true);
+
+define selectionEntitiesInLOS(): FilteredArray(HP().selectionArray, IsInViewAngle(HP(), ArrayElement()[0], 120) == true && IsInLineOfSight(eyePositionHP(), ArrayElement()[0], BarrierLOS.NoBarriersBlock)   );
+
+
+define closestSelectionEntity(define vectors) : 
+FirstOf(
+    FilteredArray(
+    SortedArray(
+        vectors,
+        DotProduct(
+            facingDirectionHP(),
+            DirectionTowards(ArrayElement()[0], eyePositionHP())
+                )
+        ),
+        DistanceBetween(eyePositionHP() + facingDirectionHP() * DistanceBetween(eyePositionHP(), ArrayElement()), ArrayElement()) <= 2)
+    );
+
+define hoverTargetHP(): closestSelectionEntity(selectionEntitiesInLOS());
 
 
 
+void SetHostSelectionArray() "【 Subroutine 】▒▒  SetHostSelectionArray  ▒▒"
+{
+        allBots = getAllBots();
+        for (define i = 0; i < CountOf(allBots); i++)
+        {
+            allBotsSelectionArray[i][0] = PositionOf(allBots[i]);
+            allBotsSelectionArray[i][1] = allBots[i];
+            allBotsSelectionArray[i][2] = EntityType.DummyBot;
+            allLookSelectionArray[i][0] = allBots[i].botLookPosition;
+            allLookSelectionArray[i][1] = allBots[i];
+            allLookSelectionArray[i][2] = EntityType.LookOrb;
+        }
+        MinWait();
+        HP().selectionArray = Append(allBotsSelectionArray, allLookSelectionArray);
+}

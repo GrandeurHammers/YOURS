@@ -1,3 +1,4 @@
+import "../SelectionEntityClass.ostw";
 playervar define isEditing;
 playervar define noclipPosition;
 playervar define placementDistance;
@@ -5,7 +6,7 @@ playervar define isChangingBot;
 playervar define prevFacings;
 playervar define originalHero;
 playervar define hasEdited;
-playervar define HostInitialize;
+playervar define initialize;
 playervar define BotLookOrbIsHovered;
 playervar define CursorPosition;
 playervar define PlayerEffectsToDestroy;
@@ -38,11 +39,24 @@ playervar define grabbedBot;
 playervar define targetedDummy;
 playervar define hoverTarget;
 playervar define selectedTarget;
+playervar define botLookOrbIsSelected;
+playervar define botLookOrbIsHovered;
+
 playervar Team nextBotTeam;
 playervar Role nextBotRole;
 playervar Hero nextBotHero;
-playervar TargetType targetEntityType;
+playervar EntityType targetEntityType;
 playervar define botLookPosition;
+playervar Team fullTeam;
+playervar Vector hostCursor;
+playervar define selectionArray;
+playervar define hostHoverTarget;
+playervar define hostSelectedTarget;
+playervar define botForcedPosition;
+playervar define botTeamSwapData;
+playervar define botSwapHeroData;
+playervar define hostSwapHeroData;
+
 
 
 enum Role {
@@ -52,7 +66,7 @@ enum Role {
     Support
 }
 
-enum TargetType {
+enum EntityType {
     None,
     DummyBot,
     LookOrb

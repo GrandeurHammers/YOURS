@@ -1,3 +1,4 @@
+import "../SelectionEntityClass.ostw";
 globalvar define botHeroes;
 globalvar define heroQueue;
 globalvar define aa_InteractionTextOptions;
@@ -31,6 +32,13 @@ globalvar define debugMode!;
 globalvar define clickSound!;
 globalvar define disablesGameHUD!;
 globalvar define textBudget 126;
+globalvar define allBots;
+globalvar define allBotsSelectionArray;
+globalvar define allLookSelectionArray;
+globalvar define buildInt;
+
+
+
 
 // Button click sounds
 
