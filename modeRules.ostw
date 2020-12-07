@@ -78,6 +78,7 @@ if(btnHeld(Button.Interact))
 if(btnNotHeld(Button.Ability1))
 if (inNormal() || inCamera() || inInitMode())
 {
+    HP().hasEdited = false;
     DisableGameModeHud(HP());
     DisableHeroHud(HP());
     HP().modeChangeLocked = true ;
@@ -111,7 +112,7 @@ if (notCamera())
 
 
 rule: "Interact to edit message"
-
+if (HP().hasEdited == false)
 if (inNormal())
 if (hasSpawnedHP())
 {
