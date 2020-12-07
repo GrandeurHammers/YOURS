@@ -8,7 +8,7 @@
     "All": {
       "Game Mode Start": "Manual",
       "Hero Limit": "Off",
-      "Respawn As Random Hero": true
+      "Respawn As Random Hero": false
     },
     "Assault": {},
     "Control": {},
