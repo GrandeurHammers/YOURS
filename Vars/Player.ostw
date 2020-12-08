@@ -58,6 +58,8 @@ playervar define botSwapHeroData;
 playervar define hostSwapHeroData;
 playervar define botTeamButtonLocked;
 playervar define botMoveButtonLocked;
+playervar define botChangeHeroButtonLocked;
+
 
 
 

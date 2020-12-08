@@ -80,7 +80,7 @@ if(btnHeld(Button.Interact))
 if(btnNotHeld(Button.Ability1))
 if (inNormal() || inCamera() || inInitMode())
 {
-    HP().hasEdited = false;
+    HP().hasEdited = true;
     DisableGameModeHud(HP());
     // DisableHeroHud(HP());
     HP().modeChangeLocked = true ;
@@ -101,6 +101,7 @@ if(btnHeld(Button.Interact))
 if (notCamera())
 
 {
+    HP().hasEdited = true;
     DisableGameModeHud(HP());
     DisableHeroHud(HP());
     HP().modeChangeLocked = true ;

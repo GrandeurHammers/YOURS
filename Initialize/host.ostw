@@ -11,8 +11,8 @@ define topHudCreate() : HP().hostSelectedTarget == false && HP().hostHoverTarget
 define showCreate(): HP().hostSelectedTarget == false && HP().hostHoverTarget == false;
 define showMove(): HP().hostSelectedTarget == false && HP().hostHoverTarget == true;
 define showRemove() : HP().hostSelectedTarget == false && HP().hostHoverTarget == true && HP().hostHoverTarget[2] == EntityType.DummyBot;
-define showSwapTeam() : HP().hostSelectedTarget == false && HP().hostHoverTarget == true && HP().hostHoverTarget[2] == EntityType.DummyBot && canSwap(botOppositeTeam());
-define showSwapHero() : HP().hostSelectedTarget == false && HP().hostHoverTarget == true && HP().hostHoverTarget[2] == EntityType.DummyBot;
+define showSwapTeam() : inEdit() && HP().hostSelectedTarget == false && HP().hostHoverTarget == true && HP().hostHoverTarget[2] == EntityType.DummyBot && canSwap(botOppositeTeam());
+define showSwapHero() : inEdit() && HP().hostSelectedTarget == false && HP().hostHoverTarget == true && HP().hostHoverTarget[2] == EntityType.DummyBot;
 define makeHPHud(define showHost, define text, define order ): 
 CreateHudText(
     VisibleTo: showHost ? HP() : [],
@@ -64,13 +64,11 @@ if(EventPlayer() == HP())
     makeHPHud(HP(), " ", 6);
     makeHPHud(HP(), " ", 7);
     makeHPHud(HP(), " ", 8);
-    makeHPHud(HP(), " ", 9);
-    makeHPHud(canSeeCusorHudHP(), <"<0> <1>", showMove() ?InputBindingString(Button.SecondaryFire) : InputBindingString(Button.PrimaryFire), showMove() ? "to Drag" : "Create Bot">, 10);
-    makeHPHud(showSwapTeam(), <"[<0>] Swap Team", InputBindingString(Button.Melee)>, 11);
-    makeHPHud(showSwapHero(), <"[<0>] Swap Hero", InputBindingString(Button.Reload)>, 12);
+    makeHPHud(canSeeCusorHudHP(), <"<0> <1>", showMove() ?InputBindingString(Button.SecondaryFire) : InputBindingString(Button.PrimaryFire), showMove() ? "to Drag" : "Create Bot">, 9);
+    makeHPHud(showSwapTeam(), <"[<0>] Swap Team", InputBindingString(Button.Melee)>, 10);
+    makeHPHud(showSwapHero(), <"[<0>] Swap Hero", InputBindingString(Button.Reload)>, 11);
     makeHPHud(showSwapHero(), <"[<0>] Remove", InputBindingString(Button.Ultimate)>, 12);
-    
-  CreateHudText(HP(), <"Server Load: <0>%", ServerLoad()>, null, null, Location.Left, 1);
+   
   HP().initialize = true;
 }
 

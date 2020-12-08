@@ -32,6 +32,12 @@ globalvar define debugMode!;
 globalvar define clickSound!;
 globalvar define disablesGameHUD!;
 globalvar define textBudget 126;
+globalvar define team1Bots;
+globalvar define team1LookPosition;
+globalvar define team2Bots;
+globalvar define team2LookPosition;
+globalvar define allSelectionOptions;
+
 globalvar define allBots;
 globalvar define allBotsSelectionArray;
 globalvar define allLookSelectionArray;
