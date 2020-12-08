@@ -37,11 +37,12 @@ if (btnHeld(Button.PrimaryFire))
         
         HP().targetedDummy = LastCreatedEntity();
         WaitUntil(HP().targetedDummy.initialize == true, 3);
-        SetHostSelectionArray();
+        HP().nextBotHero = RandomValueInArray(AllHeroes());
     }
     else {
        SmallMessage(HP(), <"Both Teams Are Full!", HP().fullTeam, HP().nextBotTeam>);
     }
+    SetHostSelectionArray();
 }
 
 rule: "onHover Selection Entity"
@@ -59,6 +60,7 @@ rule: "Grab Hover Target"
 if(btnHeld(Button.SecondaryFire) == true )
 if (inEdit())
 if(HP().hostHoverTarget == true)
+if(HP().botMoveButtonLocked == false)
 {
     HP().hostSelectedTarget = HP().hostHoverTarget;
     HP().hostHoverTarget = null;
@@ -68,6 +70,8 @@ if(HP().hostHoverTarget == true)
       StartForcingPlayerPosition(HP().hostSelectedTarget[1],
       HP().hostSelectedTarget[1] == EvaluateOnce(HP().hostSelectedTarget[1]) ? UpdateEveryFrame(placementPositionHP()) : EvaluateOnce(HP().hostSelectedTarget[1]).botForcedPosition, true);
     }
+    SetHostSelectionArray();
+
     
 }
 
@@ -95,11 +99,21 @@ if (inEdit())
 if(btnHeld(Button.Melee) == true )
 if(HP().hostHoverTarget == true)
 if(HP().hostHoverTarget[2] == EntityType.DummyBot)
-if(HP().botTeamSwapData == false)
+if(HP().botTeamButtonLocked == false)
 {
+    HP().botTeamButtonLocked = true;
     if(remainingSlots(OppositeTeamOf(TeamOf(HP().hostHoverTarget[1]))) > 0) {
-      HP().botTeamSwapData = [HeroOf(HP().hostHoverTarget[1]), OppositeTeamOf(TeamOf(HP().hostHoverTarget[1])), HP().hostHoverTarget[1].botForcedPosition, HP().hostHoverTarget[1].botLookPosition, SlotOf(HP().hostHoverTarget[1])];
-      DestroyDummyBot(TeamOf(HP().hostHoverTarget[1]), SlotOf(HP().hostHoverTarget[1])); 
+      HP().botTeamSwapData = [
+        HeroOf(HP().hostHoverTarget[1]),
+        OppositeTeamOf(TeamOf(HP().hostHoverTarget[1])),
+        PositionOf(HP().hostHoverTarget[1]),
+        EyePosition(HP().hostHoverTarget[1]) + FacingDirectionOf(HP().hostHoverTarget[1]) * 3,
+        SlotOf(HP().hostHoverTarget[1]),
+        TeamOf(HP().hostHoverTarget[1])
+      ];
+      Wait(.250);
+      DestroyDummyBot(HP().botTeamSwapData[5], HP().botTeamSwapData[4]); 
+      Wait(.250);
       CreateDummyBot(
                 HP().botTeamSwapData[0],
                 HP().botTeamSwapData[1],
@@ -108,15 +122,18 @@ if(HP().botTeamSwapData == false)
                 , HP().botTeamSwapData[3]);
         HP().targetedDummy = LastCreatedEntity();
         WaitUntil(HP().targetedDummy.initialize == true, .100);
-        LastCreatedEntity().botForcedPosition = HP().botTeamSwapData[2];
-        LastCreatedEntity().botLookPosition = HP().botTeamSwapData[3];
+        HP().targetedDummy.botForcedPosition = HP().botTeamSwapData[2];
+        HP().targetedDummy.botLookPosition = HP().botTeamSwapData[3];
         SetHostSelectionArray();
-        MinWait();
-        HP().botTeamSwapData = null;
     }
     else {
         SmallMessage(HP(), <"<0> is FUll!", OppositeTeamOf(TeamOf(HP().hostHoverTarget[1]))>);
     }
+    WaitUntil(btnHeld(Button.Melee) == false, 3);
+     HP().botTeamSwapData = null;
+     SetHostSelectionArray();
+     HP().botTeamButtonLocked = false;
+     
 }
 
 rule: "Remove Bot"
@@ -129,33 +146,73 @@ if(HP().hostHoverTarget[2] == EntityType.DummyBot)
     MinWait();
     SetHostSelectionArray();
 }
+void  SetBotSwapData() "【 Subroutine 】▒▒ SetBotSwapData" {
+    HP().targetedDummy = HP().hostHoverTarget[1];
+    HP().botSwapHeroData = [
+        HeroOf(HP().targetedDummy),
+        TeamOf(HP().targetedDummy),
+        HP().targetedDummy.botForcedPosition,
+        HP().targetedDummy.botLookPosition,
+        SlotOf(HP().targetedDummy)
+        ];
+}
+void  SetHostHeroSwapData() "【 Subroutine 】▒▒ etHostHeroSwapData" {
+    HP().hostSwapHeroData = [HeroOf(HP()), PositionOf(HP()), FacingDirectionOf(HP())];
+}
+
+void handleResettingHostHero() "【 Subroutine 】▒▒ handleResettingHostHero" {
+    ForcePlayerHero(HP(), HP().hostSwapHeroData[0]);
+    WaitUntil(hasSpawnedHP() == true, .250);
+    Teleport(HP(), HP().hostSwapHeroData[1]);
+    SetFacing(HP(), HP().hostSwapHeroData[2]);
+    StopForcingHero(HP());
+}
+void handleBotsHeroChange() "【 Subroutine 】▒▒ handleBotsHeroChange" {
+
+  MinWait();
+  CreateDummyBot(
+    Hero: HP().botSwapHeroData[0],
+    Team: HP().botSwapHeroData[1],
+    Slot: HP().botSwapHeroData[4],
+    Position: HP().botSwapHeroData[2],
+    Facing: DirectionTowards(HP().botSwapHeroData[2], HP().botSwapHeroData[3])
+  );
+  HP().targetedDummy = LastCreatedEntity();
+  WaitUntil(HP().targetedDummy.initialize == true, 1);
+  HP().targetedDummy.botForcedPosition = HP().botSwapHeroData[2];
+  HP().targetedDummy.botLookPosition = HP().botSwapHeroData[3];
+  SetHostSelectionArray();
+}
+void  SwapHostAndBotHero() "【 Subroutine 】▒▒ SwapHostAnyBotHero" {
+    SetBotSwapData();
+    SetHostHeroSwapData();
+    SetAllowedHeroes(HP(), FilteredArray(AllHeroes(), ArrayElement() != HeroOf(HP())));
+    DestroyDummyBot(HP().botSwapHeroData[1], HP().botSwapHeroData[4]);
+    Wait(.5);
+    SetHostSelectionArray();
+    ResetHeroAvailability(HP());
+    WaitUntil(HasSpawned(HP()), 9999);
+    HP().botSwapHeroData[0] = HeroOf(HP());
+    PreloadHero(HP(), HP().hostSwapHeroData[0]);
+    MinWait();
+    handleResettingHostHero();
+    handleBotsHeroChange();
+}
 
 rule: "Swap Bot Hero"
 if (inEdit())
-if(btnHeld(Button.Ultimate) == true )
+if(HP().botChangeHeroButtonLocked == false)
+if(btnHeld(Button.Reload) == true )
 if(HP().hostHoverTarget == true)
 if(HP().hostHoverTarget[2] == EntityType.DummyBot)
 {
-    HP().botTeamSwapData = [HeroOf(HP().hostHoverTarget[1]), TeamOf(HP().hostHoverTarget[1]), HP().hostHoverTarget[1].botForcedPosition, HP().hostHoverTarget[1].botLookPosition, SlotOf(HP().hostHoverTarget[1])];
-    HP().hostSwapHeroData = [HeroOf(HP()), PositionOf(HP()), FacingDirectionOf(HP())];
-    PreloadHero(HP(), HP().hostHoverTarget[1]);
-    MinWait();
-    ForcePlayerHero(HP(), HP().hostHoverTarget[1]);
-    DestroyDummyBot(TeamOf(HP().hostHoverTarget[1]), SlotOf(HP().hostHoverTarget[1]));
-    SetAllowedHeroes(HP(), FilteredArray(AllowedHeroes(HP()), ArrayElement() != HeroOf(HP())));
-    Wait(.250);
-    ResetHeroAvailability(HP());
-    PreloadHero(HP(), HP().hostSwapHeroData[0]);
-    WaitUntil(HasSpawned(HP()), 9999);
-    CreateDummyBot(
-        Hero: HP().botTeamSwapData[0],
-        Team: HP().botTeamSwapData[1],
-        Slot: HP().botTeamSwapData[4],
-        Position: HP().botTeamSwapData[2],
-        Facing: HP().botTeamSwapData[3]);
-    HP().targetedDummy = LastCreatedEntity();
-    WaitUntil(HasSpawned(HP().targetedDummy), 9999);
+    HP().botChangeHeroButtonLocked = true;
+    SwapHostAndBotHero();
     SetHostSelectionArray();
+    HP().hostHoverTarget = null;
+    HP().selectedTarget = null;
+    WaitUntil(btnHeld(Button.Reload) == false, 3);
+    HP().botChangeHeroButtonLocked = false;
 }
 
 
