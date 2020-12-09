@@ -12,14 +12,16 @@ void BotCreate() "【 Subroutine 】▒▒  BotCreate  ▒▒"
                 placementPositionHP()
                 , null);
         
-        HP().hoverTarget = LastCreatedEntity();
 }
 define remainingSlots(Team team): NumberOfSlots(team) - CountOf(AllPlayers(team));
 define ensureTeamHasOpenSlot(Team team): remainingSlots(team) > 0 ? team : remainingSlots(OppositeTeamOf(team)) > 0 ? OppositeTeamOf(team) : Team.All;
 rule: "Create bot"
 if (inEdit())
+if(HP().hostSelectedTarget == false)
+if(HP().hostHoverTarget == false)
 if (btnHeld(Button.PrimaryFire))
 {
+    HP().placementDistance = 12;
     if(remainingSlots(HP().nextBotTeam) <= 0 && remainingSlots(OppositeTeamOf(HP().nextBotTeam)) > 0) {
         HP().fullTeam = HP().nextBotTeam;
         HP().nextBotTeam = OppositeTeamOf(HP().nextBotTeam);
@@ -37,7 +39,7 @@ if (btnHeld(Button.PrimaryFire))
         
         HP().targetedDummy = LastCreatedEntity();
         WaitUntil(HP().targetedDummy.initialize == true, 3);
-        HP().nextBotHero = RandomValueInArray(AllHeroes());
+        HP().nextBotHero = FilteredArray(RandomValueInArray(AllHeroes()), ArrayElement() != HP().nextBotHero);
     }
     else {
        SmallMessage(HP(), <"Both Teams Are Full!", HP().fullTeam, HP().nextBotTeam>);
@@ -57,23 +59,45 @@ if(HP().hostSelectedTarget == false)
 }
 
 rule: "Grab Hover Target"
-if(btnHeld(Button.SecondaryFire) == true )
 if (inEdit())
 if(HP().hostHoverTarget == true)
 if(HP().botMoveButtonLocked == false)
+if(btnHeld(Button.SecondaryFire) == true )
 {
     HP().hostSelectedTarget = HP().hostHoverTarget;
-    HP().hostHoverTarget = null;
+    HP().placementDistance = DistanceBetween(EyePosition(HP()), HP().hostHoverTarget);
     if(HP().hostSelectedTarget[2] == EntityType.DummyBot) {
       SetGravity(HP().hostSelectedTarget[1], 0);
       StopForcingPlayerPosition(HP().hostSelectedTarget[1]);
       StartForcingPlayerPosition(HP().hostSelectedTarget[1],
       HP().hostSelectedTarget[1] == EvaluateOnce(HP().hostSelectedTarget[1]) ? UpdateEveryFrame(placementPositionHP()) : EvaluateOnce(HP().hostSelectedTarget[1]).botForcedPosition, true);
     }
+    MinWait();
     SetHostSelectionArray();
 
     
 }
+// define rateOfChange():  AbsoluteValue(VerticalFacingAngleOf(HP()) * 2 / 120);
+rule: "Update Range"
+if(btnHeld(Button.SecondaryFire) == true )
+if(btnHeld(Button.Ability2) == true || btnHeld(Button.Ultimate) == true )
+if (inEdit()) {
+  HP().placementDistance =  btnHeld(Button.Ultimate) == true && btnHeld(Button.Ability2) == false ? HP().placementDistance -  0.250 : btnHeld(Button.Ultimate) == false && btnHeld(Button.Ability2) == true ? HP().placementDistance + 0.250 : HP().placementDistance;
+  MinWait();
+  LoopIfConditionIsTrue();
+}
+
+rule: "Lock Ultimate"
+if(btnHeld(Button.SecondaryFire) == true )
+if(btnHeld(Button.Ultimate) == true )
+if(HP().botTeamButtonLocked == false)
+{
+  HP().botTeamButtonLocked = true;
+  WaitUntil(btnHeld(Button.Ultimate) == false, 3);
+  HP().botTeamButtonLocked = false;
+}
+
+
 
 rule: "Drop Selected Target"
 if(btnHeld(Button.SecondaryFire) == false )
@@ -96,9 +120,11 @@ if(HP().hostSelectedTarget == true)
 
 rule: "Swap Bot Teams"
 if (inEdit())
-if(btnHeld(Button.Melee) == true )
+if(btnHeld(Button.Ultimate) == true )
+if(btnHeld(Button.SecondaryFire) == false )
 if(HP().hostHoverTarget == true)
 if(HP().hostHoverTarget[2] == EntityType.DummyBot)
+if(HP().hostSelectedTarget == false)
 if(HP().botTeamButtonLocked == false)
 {
     HP().botTeamButtonLocked = true;
@@ -111,7 +137,7 @@ if(HP().botTeamButtonLocked == false)
         SlotOf(HP().hostHoverTarget[1]),
         TeamOf(HP().hostHoverTarget[1])
       ];
-      Wait(.250);
+      MinWait();
       DestroyDummyBot(HP().botTeamSwapData[5], HP().botTeamSwapData[4]); 
       Wait(.250);
       CreateDummyBot(
@@ -129,7 +155,7 @@ if(HP().botTeamButtonLocked == false)
     else {
         SmallMessage(HP(), <"<0> is FUll!", OppositeTeamOf(TeamOf(HP().hostHoverTarget[1]))>);
     }
-    WaitUntil(btnHeld(Button.Melee) == false, 3);
+    WaitUntil(btnHeld(Button.Ultimate) == false, 3);
      HP().botTeamSwapData = null;
      SetHostSelectionArray();
      HP().botTeamButtonLocked = false;
@@ -138,13 +164,17 @@ if(HP().botTeamButtonLocked == false)
 
 rule: "Remove Bot"
 if (inEdit())
-if(btnHeld(Button.Ultimate) == true )
+if(btnHeld(Button.Melee) == true )
 if(HP().hostHoverTarget == true)
 if(HP().hostHoverTarget[2] == EntityType.DummyBot)
+if(HP().hostSelectedTarget == false)
+if(HP().removeBotButtonLocked == false)
 {
+    HP().removeBotButtonLocked = true;
     DestroyDummyBot(TeamOf(HP().hostHoverTarget[1]), SlotOf(HP().hostHoverTarget[1]));
     MinWait();
     SetHostSelectionArray();
+    HP().removeBotButtonLocked = false;
 }
 void  SetBotSwapData() "【 Subroutine 】▒▒ SetBotSwapData" {
     HP().targetedDummy = HP().hostHoverTarget[1];
@@ -204,6 +234,7 @@ if (inEdit())
 if(HP().botChangeHeroButtonLocked == false)
 if(btnHeld(Button.Reload) == true )
 if(HP().hostHoverTarget == true)
+if(HP().hostSelectedTarget == false)
 if(HP().hostHoverTarget[2] == EntityType.DummyBot)
 {
     HP().botChangeHeroButtonLocked = true;

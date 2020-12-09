@@ -31,7 +31,7 @@ playervar define iter!;
 playervar define buttonModification 119;
 playervar define getProperties 118;
 playervar define modeEffectIds;
-playervar define modeChangeLocked;
+
 playervar Team botTeam;
 playervar Role botRole;
 playervar Hero botHero;
@@ -59,6 +59,8 @@ playervar define hostSwapHeroData;
 playervar define botTeamButtonLocked;
 playervar define botMoveButtonLocked;
 playervar define botChangeHeroButtonLocked;
+playervar define modeChangeLocked;
+playervar define removeBotButtonLocked;
 
 
 

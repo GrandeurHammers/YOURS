@@ -58,13 +58,13 @@ Vector cameraLookPosition() : eyePositionHP() + facingDirectionHP() * 2;
 define hasSpawnedHP(): HasSpawned(HP());
 
 
-define placementPositionHP(): RayCastHitPosition(
-            StartPOS: EyePosition(HP()),
-            EndPOS: EyePosition(HP()) + facingDirectionHP() * HP().placementDistance,
+define placementPositionHP(): UpdateEveryFrame(RayCastHitPosition(
+            StartPOS: UpdateEveryFrame(EyePosition(HP())),
+            EndPOS: UpdateEveryFrame(EyePosition(HP()) + facingDirectionHP() * HP().placementDistance),
             PlayersToInclude: null,
             PlayersToExclude: AllPlayers(),
             IncludePlayerOwnedObjects: false
-            );
+            ));
 define oscillatePositive(define speed): AbsoluteValue(SineFromRadians(TotalTimeElapsed() * speed));
 define hoverIconOffset(define speed = 2) : Vector(0, .500 + (.250 * oscillatePositive(speed)) , 0);
 
@@ -99,7 +99,7 @@ FirstOf(
             DirectionTowards(ArrayElement()[0], eyePositionHP())
                 )
         ),
-        DistanceBetween(eyePositionHP() + facingDirectionHP() * DistanceBetween(eyePositionHP(), ArrayElement()), ArrayElement()) <= 5)
+        DistanceBetween(eyePositionHP() + facingDirectionHP() * DistanceBetween(eyePositionHP(), ArrayElement()), ArrayElement()) <= 2.0)
     );
 
 define hoverTargetHP(): closestSelectionEntity(selectionEntitiesInLOS());

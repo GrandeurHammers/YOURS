@@ -6,6 +6,7 @@ define remainingSlotCount() : 12 - CountOf(AllPlayers(Team.All));
 define canSeeCusorHudHP() : inEdit() && !HP().isInMenu;
 define showHost() : canSeeCusorHudHP() ? HP() : [];
 define canSwap(Team team): NumberOfSlots(team) - CountOf(AllPlayers(team)) > 0;
+define showCreateText(): inEdit() && !HP().isInMenu && HP().hostHoverTarget[1] == false && HP().hostSelectedTarget == false;
 define botOppositeTeam(): OppositeTeamOf(TeamOf(HP().hostHoverTarget[1]));
 define topHudCreate() : HP().hostSelectedTarget == false && HP().hostHoverTarget == false && remainingSlotCount() > 0;
 define showCreate(): HP().hostSelectedTarget == false && HP().hostHoverTarget == false;
@@ -13,7 +14,7 @@ define showMove(): HP().hostSelectedTarget == false && HP().hostHoverTarget == t
 define showRemove() : HP().hostSelectedTarget == false && HP().hostHoverTarget == true && HP().hostHoverTarget[2] == EntityType.DummyBot;
 define showSwapTeam() : inEdit() && HP().hostSelectedTarget == false && HP().hostHoverTarget == true && HP().hostHoverTarget[2] == EntityType.DummyBot && canSwap(botOppositeTeam());
 define showSwapHero() : inEdit() && HP().hostSelectedTarget == false && HP().hostHoverTarget == true && HP().hostHoverTarget[2] == EntityType.DummyBot;
-define makeHPHud(define showHost, define text, define order ): 
+define makeHPHud(define showHost, define text, define order, Color color = Color.White): 
 CreateHudText(
     VisibleTo: showHost ? HP() : [],
     Header: null,
@@ -23,19 +24,23 @@ CreateHudText(
     SortOrder: order,
     HeaderColor: Color.White,
     SubheaderColor: Color.White,
-    TextColor: Color.White,
+    TextColor: color,
     Reevaluation: HudTextRev.VisibleToAndString,
     Spectators: Spectators.DefaultVisibility);
+
+define rainbowVomit(): ValueInArray([ Color.White, Color.Yellow, Color.Green, Color.Purple, Color.Red, Color.Blue, Color.Aqua, Color.Orange, Color.SkyBlue, Color.Turquoise, Color.LimeGreen, Color.Black, Color.Rose, Color.Violet, Color.Gray], UpdateEveryFrame(RandomInteger(0, 15) + (TotalTimeElapsed() * 0)));
 disabled rule: "▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒【 Host 】▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒"
 {
 }
 rule: "Change Hosts Hero"
 if(btnHeld(Button.Ability1))
 if(btnHeld(Button.Reload))
+if(HP().botChangeHeroButtonLocked == false)
 {
+    HP().botChangeHeroButtonLocked = true;
     HP().hostSwapHeroData = [PositionOf(HP()), facingDirectionHP()];
     SetAllowedHeroes(HP(), FilteredArray(AllowedHeroes(HP()), ArrayElement() != HeroOf(HP())));
-    Wait(.250);
+    Wait(1);
     ResetHeroAvailability(HP());
     WaitUntil(hasSpawnedHP(), 9999);
     MinWait();
@@ -43,7 +48,13 @@ if(btnHeld(Button.Reload))
     SetFacing(HP(), HP().hostSwapHeroData[1]);
     MinWait();
     HP().hostSwapHeroData = null;
+    WaitUntil(btnHeld(Button.Reload) == false, 3);
+    HP().botChangeHeroButtonLocked = false;
 }
+define showDragText(): canSeeCusorHudHP() && HP().hostHoverTarget[1] == true && HP().hostSelectedTarget == false; 
+define showIncreaseRange() :canSeeCusorHudHP() && HP().hostSelectedTarget == true && btnHeld(Button.SecondaryFire);
+define showDecreaseRange() :canSeeCusorHudHP() && HP().hostSelectedTarget == true && btnHeld(Button.SecondaryFire);
+define showRange() :canSeeCusorHudHP() && HP().hostSelectedTarget == true && btnHeld(Button.SecondaryFire);
 rule: "【 Initialize 】▒▒  Host  ▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒"
 Event.OngoingPlayer
 if (HP().initialize == false)
@@ -51,7 +62,6 @@ if(EventPlayer() == HP())
 {
     HP().mode = ModeType.Normal;
     HP().placementDistance = 12;
-    
     HP().nextBotTeam = Team.Team2;
     HP().nextBotRole = Role.All;
     HP().nextBotHero = RandomValueInArray(AllHeroes());
@@ -62,13 +72,16 @@ if(EventPlayer() == HP())
     makeHPHud(HP(), " ", 4);
     makeHPHud(HP(), " ", 5);
     makeHPHud(HP(), " ", 6);
-    makeHPHud(HP(), " ", 7);
-    makeHPHud(HP(), " ", 8);
-    makeHPHud(canSeeCusorHudHP(), <"<0> <1>", showMove() ?InputBindingString(Button.SecondaryFire) : InputBindingString(Button.PrimaryFire), showMove() ? "to Drag" : "Create Bot">, 9);
-    makeHPHud(showSwapTeam(), <"[<0>] Swap Team", InputBindingString(Button.Melee)>, 10);
-    makeHPHud(showSwapHero(), <"[<0>] Swap Hero", InputBindingString(Button.Reload)>, 11);
-    makeHPHud(showSwapHero(), <"[<0>] Remove", InputBindingString(Button.Ultimate)>, 12);
-   
+    makeHPHud(HP(), " ", 6);
+    makeHPHud(showIncreaseRange(), <"[<0>] Increase Range", InputBindingString(Button.Ability2)>, 7, btnHeld(Button.Ability2) ? Color.Orange : Color.White);
+    makeHPHud(canSeeCusorHudHP() && showDragText(), <"<0> to Drag", InputBindingString(Button.SecondaryFire)>, 8, btnHeld(Button.SecondaryFire) ? Color.Orange : Color.White);
+    makeHPHud(canSeeCusorHudHP() && showCreateText(), <"<0> Create Bot", InputBindingString(Button.PrimaryFire)>, 8, btnHeld(Button.PrimaryFire) ? Color.Orange : Color.White);
+    makeHPHud(canSeeCusorHudHP() && showRange(), <"<Range <0> m>", HP().placementDistance >, 8, btnHeld(Button.PrimaryFire) ? Color.Orange : Color.White);
+    makeHPHud(showDecreaseRange(), <"[<0>] Decrease", InputBindingString(Button.Ultimate)>, 9, btnHeld(Button.Ultimate) ? Color.Orange : Color.White);
+    makeHPHud(showSwapTeam(), <"[<0>] Swap Team", InputBindingString(Button.Ultimate)>, 9, btnHeld(Button.Ultimate) ? Color.Orange : Color.White);
+    makeHPHud(showSwapHero(), <"[<0>] Swap Hero", InputBindingString(Button.Reload)>, 10, btnHeld(Button.Reload) ? Color.Orange : Color.White);
+    makeHPHud(showSwapHero(), <"[<0>] Remove", InputBindingString(Button.Melee)>, 11, btnHeld(Button.Melee) ? Color.Orange : Color.White);
+   CreateInWorldText(HP(), "Rainbow Vomit", placementPositionHP(), 2, Clipping.ClipAgainstSurfaces, InworldTextRev.VisibleToPositionStringAndColor, rainbowVomit());
   HP().initialize = true;
 }
 
