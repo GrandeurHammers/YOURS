@@ -4,6 +4,13 @@ disabled rule: "▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒�
 {
 }
 
+// ArrayContains(filter, ArrayElement())  
+define rainbowColors(Color[] filter = []): FilteredArray([ Color.White, Color.Yellow, Color.Green, Color.Purple, Color.Red, Color.Blue, Color.Aqua, Color.Orange, Color.SkyBlue, 
+                        Color.Turquoise, Color.LimeGreen, Color.Black, Color.Rose, Color.Violet, Color.Gray], ArrayContains(filter, ArrayElement()) != true   )[RandomInteger(0, 15 - CountOf(filter) ) + TotalTimeElapsed() * 0];
+define rainbowLevel1(): rainbowColors([Color.Black, Color.White, Color.Gray, Color.Violet]);
+define rainbowLevel2(): rainbowColors([Color.Black, Color.White, Color.Gray, Color.LimeGreen]);
+define rainbowLevel3(): rainbowColors([Color.Black, Color.White]);
+define rainbowLevel4(): rainbowColors([]);
 void GlobalInit() "【 Subroutine 】▒▒  GlobalInit  ▒▒"
 {
     if (SettingsDeveloper[1] > 0)
@@ -62,27 +69,50 @@ void GlobalVarSlotSetInit() "【 Subroutine 】▒▒  GlobalVarSlotSetInit"
 void GlobalWorkshopSettingInit() "【 Subroutine 】▒▒  GlobalWorkshopSettingInit"
 {
     BindingsAction = [];
-    SettingsAll[17] = WorkshopSettingReal("Your Overwatch Utility Repositioning System ", "Version", 1, 0, 2, 0);
+    SettingsAll[0] = WorkshopSettingReal("Your Overwatch Utility Repositioning System ", "Version", 1, 0, 2, 0);
     SettingsCredits[0] = WorkshopSettingCombo("Made By Grandeur Hammers", "Join our discord!", 0, ["bit.ly/GHGAMES", "grandeurhammers.com/discord"], 0);
-    SettingsAll[0] = WorkshopSettingCombo("Interaction Modes", "Edit Mode", 0, ["Interact", "Default Key = F"], 0);
-    SettingsAll[1] = WorkshopSettingCombo("Interaction Modes", "Camera Mode", 0, ["Ability 1 + Interact", "Default Keys = Left Shift + F"], 1);
-    SettingsAll[2] = WorkshopSettingCombo("Interaction Modes", "Normal Mode (Exit other modes)", 0, ["Interact", "Default Button =  F"], 2);
-    SettingsAll[3] = WorkshopSettingCombo("Actions", "Create Bot (Edit Mode Only)", 0, ["Primary Fire", "Default Button = Left Mouse"], 0);
-    SettingsAll[4] = WorkshopSettingCombo("Actions", "Move Bot (Edit Mode Only)", 0, ["Hold Secondary Fire + Drag", "Default Button = Right Mouse"], 1);
-    SettingsAll[5] = WorkshopSettingCombo("Actions", "Change Hero of Bot (Edit Mode Only)", 0, ["Reload", "Default Button = R"], 2);
-    SettingsAll[6] = WorkshopSettingCombo("Actions", "Change Team of Bot (Edit Mode Only)", 0, ["Melee", "Default Button = V"], 3);
-    SettingsAll[7] = WorkshopSettingCombo("Actions", "Remove Bot (Edit Mode Only)", 0, ["Ultimate", "Default Button = Q"], 4);
-    SettingsAll[8] = WorkshopSettingCombo("Player Actions", "Change Your Hero", 0, ["Ability 1 + Reload", "Default Buttons = Left Shift + R"], 1);
-    SettingsAll[9] = WorkshopSettingCombo("Player Actions", "Open Menu (Edit & Camera Mode Only)", 0, ["Ability 2", "Default Buttons = E"], 2);
-    SettingsAll[10] = WorkshopSettingCombo("Movment Controls", "Fly Down", 0, ["Hold Crouch", "Default Button = Left Ctrl"], 0);
-    SettingsAll[11] = WorkshopSettingCombo("Communication Wheel", "Open Support Role Menu (Edit Mode Only)", 0, ["\"Need Healing\"", "Default Button = X"], 0);
-    SettingsAll[12] = WorkshopSettingCombo("Communication Wheel", "Open Tank Role Menu (Edit Mode Only)", 0, ["\"Defending\"", "Default Buttons = This One's on you to set "], 1);
-    SettingsAll[13] = WorkshopSettingCombo("Communication Wheel", "Open Damage Role Menu (Edit Mode Only)", 0, ["\"Attacking\"", "Default Button = Elo Hell"], 2);
-    SettingsAll[14] = WorkshopSettingCombo("Actions", "Move Bot's Aim Orb  (Edit Mode Only)", 0, ["Hold Secondary Fire + Drag", "Default Button = Right Mouse"], 5);
-    SettingsAll[15] = WorkshopSettingCombo("Communication Wheel", "Destory All bots (Edit Mode Only)", 0, ["\"Goodbye\"", "You will be prompted to confirm"], 3);
+    SettingsAll[1] = WorkshopSettingCombo("Interaction Modes", "Edit Mode", 0, ["Interact", "Default Key = F"], 0);
+    SettingsAll[2] = WorkshopSettingCombo("Interaction Modes", "Camera Mode", 0, ["Ability 1 + Interact", "Default Keys = Left Shift + F"], 1);
+    SettingsAll[3] = WorkshopSettingCombo("Interaction Modes", "Normal Mode (Exit other modes)", 0, ["Interact", "Default Button =  F"], 2);
+    SettingsAll[4] = WorkshopSettingCombo("Edit Mode", "Create Bot", 0, ["Primary Fire", "Default Button = Left Mouse"], 0);
+    SettingsAll[5] = WorkshopSettingCombo("Edit Mode", "Move Bot or Focal Point (Edit Mode Only)", 0, ["Hold Secondary Fire + Drag", "Default Button = Right Mouse"], 1);
+    SettingsAll[6] = WorkshopSettingCombo("Edit Mode", "Change Hero of Bot (Edit Mode Only)", 0, ["Reload", "Default Button = R"], 2);
+    SettingsAll[7] = WorkshopSettingCombo("Edit Mode", "Change Team of Bot (Edit Mode Only)", 0, ["Ultimate", "Default Button = Q"], 3);
+    SettingsAll[8] = WorkshopSettingCombo("Edit Mode", "Remove Bot (Edit Mode Only)", 0, ["Melee", "Default Button = V"], 4);
+    SettingsAll[9] = WorkshopSettingCombo("Player Actions", "Change Your Hero", 0, ["Ability 1 + Reload", "Default Buttons = Left Shift + R"], 1);
+    SettingsAll[10] = WorkshopSettingCombo("Moving Controls", "Increase Placment Range (Edit & Camera Mode Only)", 0, ["Ability 2", "Default Buttons = E"], 2);
+    SettingsAll[10] = WorkshopSettingCombo("Moving Controls", "Decrease Placment Range (Edit & Camera Mode Only)", 0, ["Ulimate", "Default Buttons = Q"], 2);
+    SettingsAll[11] = WorkshopSettingCombo("Movment Controls", "Fly Down", 0, ["Hold Crouch", "Default Button = Left Ctrl"], 0);
+    SettingsAll[12] = WorkshopSettingCombo("Movment Controls", "Fly Up", 0, ["Hold Jump", "Default Button = Space"], 1);
+    // SettingsAll[11] = WorkshopSettingCombo("Communication Wheel", "Open Support Role Menu (Edit Mode Only)", 0, ["\"Need Healing\"", "Default Button = X"], 0);
+    // SettingsAll[12] = WorkshopSettingCombo("Communication Wheel", "Open Tank Role Menu (Edit Mode Only)", 0, ["\"Defending\"", "Default Buttons = This One's on you to set "], 1);
+    // SettingsAll[13] = WorkshopSettingCombo("Communication Wheel", "Open Damage Role Menu (Edit Mode Only)", 0, ["\"Attacking\"", "Default Button = Elo Hell"], 2);
+    // SettingsAll[14] = WorkshopSettingCombo("Actions", "Move Bot's Aim Orb  (Edit Mode Only)", 0, ["Hold Secondary Fire + Drag", "Default Button = Right Mouse"], 5);
+    // SettingsAll[15] = WorkshopSettingCombo("Communication Wheel", "Destory All bots (Edit Mode Only)", 0, ["\"Goodbye\"", "You will be prompted to confirm"], 3);
     // [Inspector Enabled, Logs Enabled ]
-    SettingsDeveloper = [WorkshopSettingToggle("Developer Settings", "Inspector Enabled", false, 0), WorkshopSettingCombo("Developer Settings", "Logs Enabled", 0, ["None", "Actions", "Errors", "System", "All"], 1), null];
-    SettingsAll[16] = WorkshopSettingCombo("Movment Controls", "Fly Up", 0, ["Hold Jump", "Default Button = Space"], 1);
+    SettingsDeveloper = [
+      WorkshopSettingCombo(
+          category:"Developer Settings",
+          name:"Rainbow Mode",
+          0,
+          options: ["Level 0", "Level 1", "Level 2", "Level 3", "Level 4"],
+          // ["Level 0", "Level 1": outline, "Level 2":orbs on move , "Level 3": Text, "Level 4": everything]
+          sortOrder: 0
+        ),
+      WorkshopSettingToggle(
+        Category:"Developer Settings",
+        Name:"Inspector Enabled",
+        Default: true,
+        SortOrder:    1),
+        WorkshopSettingCombo(
+          category:"Developer Settings",
+          name:"Logs Enabled",
+          0,
+          options: ["None", "Actions", "Errors", "System", "All"],
+          sortOrder: 2
+        )
+        ];
+    
 }
 
 void GlobalBindingsButtonSetInit() "【 Subroutine 】▒▒  GlobalBindingsButtonSet ▒▒"
@@ -92,6 +122,29 @@ void GlobalBindingsButtonSetInit() "【 Subroutine 】▒▒  GlobalBindingsButt
 void GlobalBindingsActionSetInit() "【 Subroutine 】▒▒  GlobalBindingsActionSet ▒▒"
 {
 }
+
+
+define getAllBots(Team team):  FilteredArray(AllPlayers(team), ArrayElement() != HP() == true);
+
+void GlobalSetSelectionDataTeam1() "【 Subroutine 】▒▒  GlobalSetSelectionDataTeam1 ▒▒"
+{
+    team1Bots = MappedArray(getAllBots(Team.Team1), ArrayElement().botForcedPosition == true ? ArrayElement().botForcedPosition : PositionOf(ArrayElement()));
+    team1LookPosition = MappedArray(team1Bots, ArrayElement().botLookPosition == true ? ArrayElement().botLookPosition : FacingDirectionOf(ArrayElement()));
+}
+
+void GlobalSetSelectionDataTeam2() "【 Subroutine 】▒▒  GlobalSetSelectionDataTeam2 ▒▒"
+{
+    team2Bots = MappedArray(getAllBots(Team.Team2), ArrayElement().botForcedPosition == true ? ArrayElement().botForcedPosition : PositionOf(ArrayElement()));
+    team2LookPosition = MappedArray(team1Bots, ArrayElement().botLookPosition == true ? ArrayElement().botLookPosition : FacingDirectionOf(ArrayElement()));
+}
+
+void GlobalSetSelectionOptions() "【 Subroutine 】▒▒  GlobalSetSelectionOptions ▒▒"
+{
+    allSelectionOptions = Append(team1Bots, Append(team1LookPosition, Append(team2Bots, team2LookPosition)));
+}
+
+
+
 
 void GlobalInspectorSetInit() "【 Subroutine 】▒▒  GlobalInspectorSet ▒▒"
 {
