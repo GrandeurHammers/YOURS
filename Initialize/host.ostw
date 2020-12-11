@@ -49,7 +49,7 @@ if(HP().botChangeHeroButtonLocked == false)
     SetFacing(HP(), HP().hostSwapHeroData[1]);
     MinWait();
     HP().hostSwapHeroData = null;
-    WaitUntil(btnHeld(Button.Reload) == false, 3);
+    WaitUntil(btnHeld(Button.Reload) == false, 1);
     HP().botChangeHeroButtonLocked = false;
 }
 define showDragText(): canSeeCusorHudHP() && HP().hostHoverTarget[1] == true && HP().hostSelectedTarget == false; 
@@ -92,7 +92,7 @@ if(EventPlayer() == HP())
     makeHPHud(canSeeCusorHudHP() && showCreateText(), <"<0> Create Bot", InputBindingString(Button.PrimaryFire)>, 8, bothTeamsAreFull() ? Color.Gray : btnHeld(Button.PrimaryFire) ? Color.Orange : Color.White);
     makeHPHud(canSeeCusorHudHP() && showRange(), <"<Range <0> m>", HP().placementDistance >, 8, btnHeld(Button.PrimaryFire) ? Color.Orange : Color.White);
     makeHPHud(showDecreaseRange(), <"[<0>] Decrease", InputBindingString(Button.Ultimate)>, 9, btnHeld(Button.Ultimate) ? Color.Orange : Color.White);
-    makeHPHud(showSwapTeam(), <"[<0>] Swap Team<1>", InputBindingString(Button.Ultimate), oppositeTeamIsFull() ? <"<0> FUll", OppositeTeamOf(TeamOf(HP().hostHoverTarget[1]))> : "" >, 9, oppositeTeamIsFull() ? Color.Gray : btnHeld(Button.Ultimate) ? Color.Orange : Color.White);
+    makeHPHud(showSwapTeam(), <"[<0>] Swap Team<1>", InputBindingString(Button.Ultimate), oppositeTeamIsFull() ? <": (<0> is Full)", OppositeTeamOf(TeamOf(HP().hostHoverTarget[1]))> : "" >, 9, oppositeTeamIsFull() ? Color.Gray : btnHeld(Button.Ultimate) ? Color.Orange : Color.White);
     makeHPHud(showSwapHero(), <"[<0>] Swap Hero", InputBindingString(Button.Reload)>, 10, btnHeld(Button.Reload) ? Color.Orange : Color.White);
     makeHPHud(showSwapHero(), <"[<0>] Remove", InputBindingString(Button.Melee)>, 11, btnHeld(Button.Melee) ? Color.Orange : Color.White);
     HP().initialize = true;
