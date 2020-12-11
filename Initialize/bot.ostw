@@ -9,7 +9,7 @@ define initBotLookPosition(): RayCastHitPosition(eyePositionEP(), eyePositionEP(
 define aimVisibleTo(): inEdit() ? HP() : [];
 define lookOrbIsHovered(): inEdit() && HP().hostHoverTarget[2] == EntityType.LookOrb &&  HP().hostHoverTarget[1] == EP();
 define lookOrbIsSelected(): inEdit() && HP().hostSelectedTarget[2] == EntityType.LookOrb &&  HP().hostSelectedTarget[1] == EP();
-define lookOrbColor(): lookOrbIsSelected() == true ? Color.Green : lookOrbIsHovered() == true ? Color.Orange : Color.SkyBlue;
+define lookOrbColor(): lookOrbIsSelected() == true ? Color.Green : lookOrbIsHovered() == true ? Color.Orange : Color.White;
 define lookOrbRadius(): lookOrbIsSelected() ? .150 : lookOrbIsHovered() == true ? .200 : .100;
 define lookOrbPosition(): lookOrbIsSelected() ?
 placementPositionHP() : EP().botLookPosition;
@@ -26,7 +26,7 @@ if(HasSpawned(EventPlayer()))
     EP().botLookPosition = initBotLookPosition();
     EP().botForcedPosition = PositionOf(EP());
     StartForcingPlayerPosition(EP(), EP().botForcedPosition, true);
-    CreateBeamEffect(aimVisibleTo(), BeamType.GrappleBeam, UpdateEveryFrame(eyePositionEP() + Vector(0,0.150,0)), UpdateEveryFrame(lookOrbPosition()), Color.SkyBlue, EffectRev.VisibleToPositionAndRadius);
+    CreateBeamEffect(aimVisibleTo(), BeamType.GrappleBeam, UpdateEveryFrame(eyePositionEP() + Vector(0,0.10,0)), UpdateEveryFrame(lookOrbPosition()), Color.SkyBlue, EffectRev.VisibleToPositionAndRadius);
     CreateEffect(
         VisibleTo: aimVisibleTo(),
         Type: Effect.Sphere,
@@ -64,16 +64,18 @@ if (AltitudeOf(EventPlayer()) < 0.500)
 }
 rule: "Show outline hovered"
 Event.OngoingPlayer
-if(EP().initialize == true)
 if (EP() != HP())
+if(inEdit())
+if(EP().initialize == true)
 if(HP().hostHoverTarget[1] == EP())
 {
  StartForcingPlayerOutlines(EP(), HP(), true, Color.Orange);
 }
 rule: "Show outline Selected"
 Event.OngoingPlayer
-if(EP().initialize == true)
 if (EP() != HP())
+if(inEdit())
+if(EP().initialize == true)
 if(HP().hostSelectedTarget[1] == EP())
 {
  StartForcingPlayerOutlines(EP(), HP(), true, Color.Green);
@@ -81,12 +83,12 @@ if(HP().hostSelectedTarget[1] == EP())
 
 rule: "White outline if not Hovered or Selected"
 Event.OngoingPlayer
-if(EP().initialize == true)
 if (EP() != HP())
 if(inEdit())
+if(EP().initialize == true)
 if(HP().hostSelectedTarget[1] != EP() && HP().hostHoverTarget[1] != EP())
 {
- StartForcingPlayerOutlines(EP(), HP(), false, Color.White);
+ StartForcingPlayerOutlines(EP(), HP(), true, Color.Black);
 }
 
 rule: "Hide outline if not Hovered or Selected"
