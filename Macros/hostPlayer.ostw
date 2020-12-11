@@ -86,7 +86,7 @@ define  setupSelectionArray(): Append(getSelectionBotArray(), getSelectionLookOr
 
 define  getSelectionArray(): FilteredArray(setupSelectionArray(), ArrayElement()[0] == true);
 
-define selectionEntitiesInLOS(): FilteredArray(HP().selectionArray, IsInViewAngle(HP(), ArrayElement()[0], 120) == true && IsInLineOfSight(eyePositionHP(), ArrayElement()[0], BarrierLOS.NoBarriersBlock)   );
+define selectionEntitiesInLOS(): FilteredArray(HP().selectionArray, IsInViewAngle(HP(), ArrayElement()[0], 120) == true && IsInLineOfSight(eyePositionHP(), ArrayElement()[0] + Vector(0,0.25,0), BarrierLOS.NoBarriersBlock)   );
 
 
 define closestSelectionEntity(define vectors) : 
@@ -99,7 +99,7 @@ FirstOf(
             DirectionTowards(ArrayElement()[0], eyePositionHP())
                 )
         ),
-        DistanceBetween(eyePositionHP() + facingDirectionHP() * DistanceBetween(eyePositionHP(), ArrayElement()), ArrayElement()) <= 2.0)
+        DistanceBetween(eyePositionHP() + facingDirectionHP() * DistanceBetween(eyePositionHP(), ArrayElement()), ArrayElement()) <= 1.25)
     );
 
 define hoverTargetHP(): notInEdit() || HP().selectionArray == EmptyArray() ? null :  closestSelectionEntity(selectionEntitiesInLOS());
@@ -112,7 +112,7 @@ void SetHostSelectionArray() "【 Subroutine 】▒▒  SetHostSelectionArray  �
         HP().selectionArray = EmptyArray();
         for (define i = 0; i < CountOf(allBots); i++)
         {
-            allBotsSelectionArray[i][0] = PositionOf(allBots[i]);
+            allBotsSelectionArray[i][0] = PositionOf(allBots[i]) + Vector(0,1,0);
             allBotsSelectionArray[i][1] = allBots[i];
             allBotsSelectionArray[i][2] = EntityType.DummyBot;
             allLookSelectionArray[i][0] = allBots[i].botLookPosition;
