@@ -74,7 +74,6 @@ if (inNormal() || inInitMode())
     HP().mode = ModeType.Edit;
     abilitiesOff();
     Resurrect(AllPlayers(Team.All));
-    HP().selectionArray = getSelectionArray();
     onEditModeEnter();
     WaitUntil(btnNotHeld(Button.Interact), 3);
     MinWait();
