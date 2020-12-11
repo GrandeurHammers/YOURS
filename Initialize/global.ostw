@@ -110,7 +110,7 @@ void GlobalWorkshopSettingInit() "【 Subroutine 】▒▒  GlobalWorkshopSettin
       WorkshopSettingToggle(
         Category:"Developer Settings",
         Name:"Inspector Enabled",
-        Default: true,
+        Default: false,
         SortOrder:    1),
         WorkshopSettingCombo(
           category:"Developer Settings",
