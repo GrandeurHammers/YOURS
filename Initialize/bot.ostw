@@ -1,21 +1,114 @@
 import "../Vars/Player.ostw";
 import "../Vars/Global.ostw";
-import "../utils/targetEventPlayer.ostw";
+import "../Macros/hostPlayer.ostw";
+import "../Macros/eventPlayer.ostw";
+
+define hoverColor(): CustomColor(235, 180, 68, 255);
+define selectedColor(): CustomColor(235, 163, 61, 255);
+define initBotLookPosition(): RayCastHitPosition(eyePositionEP(), eyePositionEP() + directionTowardsEP(HP()) * 5);
+define aimVisibleTo(): inEdit() ? HP() : [];
+define lookOrbIsHovered(): inEdit() && HP().hostHoverTarget[2] == EntityType.LookOrb &&  HP().hostHoverTarget[1] == EP();
+define lookOrbIsSelected(): inEdit() && HP().hostSelectedTarget[2] == EntityType.LookOrb &&  HP().hostSelectedTarget[1] == EP();
+define lookOrbColor(): lookOrbIsSelected() == true ? Color.Green : lookOrbIsHovered() == true ? Color.Orange : Color.SkyBlue;
+define lookOrbRadius(): lookOrbIsSelected() ? .150 : lookOrbIsHovered() == true ? .200 : .100;
+define lookOrbPosition(): lookOrbIsSelected() ?
+placementPositionHP() : EP().botLookPosition;
 
 disabled rule: "▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒【 Bot 】▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒"
 {
 }
 define canSeeAim() : !IsDummyBot(ArrayElement()) && ArrayElement().mode == ModeType.Edit;
-void BotInit() "【 Subroutine 】▒▒  BotInit  ▒▒"
-{
-    CreateBeamEffect(
-        FilteredArray(AllPlayers(Team.All), canSeeAim()), BeamType.GrappleBeam, EyePosition(EventPlayer()), BotLookPosition, Color.SkyBlue, EffectRev.VisibleToPositionAndRadius);
-    CreateEffect(FilteredArray(AllPlayers(Team.All), canSeeAim()), Effect.Sphere, EntityExists(BotLookOrbGrabedBy) == true ? [Color.Yellow, Color.Green, Color.Purple, Color.Blue, Color.Rose, Color.Aqua, Color.Orange, Color.Rose, Color.Violet][UpdateEveryFrame(RoundToInteger(9 * AbsoluteValue(SineFromRadians(TotalTimeElapsed() * 3.5)), Rounding.Nearest))] : BotLookOrbIsHovered ? Color.Orange : Color.SkyBlue, UpdateEveryFrame(BotLookPosition), 0.15 - (BotLookOrbIsHovered ? 0.05 * AbsoluteValue(SineFromDegrees(TotalTimeElapsed() * 3.5)) : 0), EffectRev.VisibleToPositionRadiusAndColor);
-
-}
-
 rule: "【 Initialize 】▒▒  Bot  ▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒"
 Event.OngoingPlayer
+if(EventPlayer() != HP())
+if(HasSpawned(EventPlayer()))
 {
-  BotInit();
+    EP().botLookPosition = initBotLookPosition();
+    EP().botForcedPosition = PositionOf(EP());
+    StartForcingPlayerPosition(EP(), EP().botForcedPosition, true);
+    CreateBeamEffect(aimVisibleTo(), BeamType.GrappleBeam, UpdateEveryFrame(eyePositionEP() + Vector(0,0.150,0)), UpdateEveryFrame(lookOrbPosition()), Color.SkyBlue, EffectRev.VisibleToPositionAndRadius);
+    CreateEffect(
+        VisibleTo: aimVisibleTo(),
+        Type: Effect.Sphere,
+        Color: lookOrbColor(),
+        Position: lookOrbPosition(),
+        Radius: lookOrbRadius(),
+        Reevaluation: EffectRev.VisibleToPositionRadiusAndColor
+      );
+
+      StartFacing(
+          EP(),
+          directionTowardsEP(lookOrbPosition()),
+          720,
+          Relative.ToWorld, FacingRev.DirectionAndTurnRate);
+      EP().initialize = true;
+}
+
+void BotDrop() "【 Subroutine 】▒▒  BotDrop ▒▒"
+{
+    EP().botLookPosition = initBotLookPosition();
+}
+
+rule: "Set high gravity if near floor"
+Event.OngoingPlayer
+if(EP().initialize == true)
+if (EP() != HP())
+if(HP().hostSelectedTarget[1] != EP())
+if (AltitudeOf(EventPlayer()) < 0.500)
+{
+    // this makes the playermodel properly stand on the ground
+    Wait(.100, WaitBehavior.AbortWhenFalse);
+    SetGravity(EP(), 100);
+    StopForcingPlayerPosition(EP());
+    HP().hostSelectedTarget = null;
+}
+rule: "Show outline hovered"
+Event.OngoingPlayer
+if(EP().initialize == true)
+if (EP() != HP())
+if(HP().hostHoverTarget[1] == EP())
+{
+ StartForcingPlayerOutlines(EP(), HP(), true, Color.Orange);
+}
+rule: "Show outline Selected"
+Event.OngoingPlayer
+if(EP().initialize == true)
+if (EP() != HP())
+if(HP().hostSelectedTarget[1] == EP())
+{
+ StartForcingPlayerOutlines(EP(), HP(), true, Color.Green);
+}
+
+rule: "White outline if not Hovered or Selected"
+Event.OngoingPlayer
+if(EP().initialize == true)
+if (EP() != HP())
+if(inEdit())
+if(HP().hostSelectedTarget[1] != EP() && HP().hostHoverTarget[1] != EP())
+{
+ StartForcingPlayerOutlines(EP(), HP(), false, Color.White);
+}
+
+rule: "Hide outline if not Hovered or Selected"
+Event.OngoingPlayer
+if(EP().initialize == true)
+if (EP() != HP())
+if(notInEdit())
+{
+ StopForcingPlayerOutlines(EP(), HP());
+}
+rule: "On Death"
+Event.OnDeath
+if (IsDummyBot(EventPlayer()) == true) {
+    DestroyDummyBot(TeamOf(EP()), SlotOf(EP()));
+    MinWait();
+    updateSelectionArray();
+    if(HP().hostSelectedTarget[1] == EP())
+    {
+        HP().hostSelectedTarget = null;
+    }
+    if(HP().hostHoverTarget[1] == EP())
+    {
+        HP().hostHoverTarget = null;
+    }
 }

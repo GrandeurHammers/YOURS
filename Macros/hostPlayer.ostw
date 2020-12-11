@@ -102,13 +102,14 @@ FirstOf(
         DistanceBetween(eyePositionHP() + facingDirectionHP() * DistanceBetween(eyePositionHP(), ArrayElement()), ArrayElement()) <= 2.0)
     );
 
-define hoverTargetHP(): closestSelectionEntity(selectionEntitiesInLOS());
+define hoverTargetHP(): notInEdit() || HP().selectionArray == EmptyArray() ? null :  closestSelectionEntity(selectionEntitiesInLOS());
 
 
 
 void SetHostSelectionArray() "【 Subroutine 】▒▒  SetHostSelectionArray  ▒▒"
 {
         allBots = getAllBots();
+        HP().selectionArray = EmptyArray();
         for (define i = 0; i < CountOf(allBots); i++)
         {
             allBotsSelectionArray[i][0] = PositionOf(allBots[i]);
@@ -118,6 +119,38 @@ void SetHostSelectionArray() "【 Subroutine 】▒▒  SetHostSelectionArray  �
             allLookSelectionArray[i][1] = allBots[i];
             allLookSelectionArray[i][2] = EntityType.LookOrb;
         }
-        MinWait();
-        HP().selectionArray = Append(allBotsSelectionArray, allLookSelectionArray);
+        HP().selectionArray = FilteredArray(Append(allBotsSelectionArray, allLookSelectionArray), EntityExists(ArrayElement()[1]) == true);
 }
+
+
+void updateSelectionArray() "updateSelectionArray" {
+    selectionArrayUpdating = true;
+    SetHostSelectionArray();
+    MinWait();
+    selectionArrayUpdating = false;
+}
+void onEditModeEnter() "onEditModeEnter" {
+    MinWait();
+    HP().hostHoverTarget = null;
+    HP().hostSelectedTarget = null;
+    selectionArrayUpdating = true;
+    SetHostSelectionArray();
+    MinWait();
+    selectionArrayUpdating = false;
+    SmallMessage(HP(), "Edit Mode");
+}
+
+void onNormalModeEnter() "onNormalModeEnter" {
+    MinWait();
+    HP().hostHoverTarget = null;
+    HP().hostSelectedTarget = null;
+    SmallMessage(HP(), "Normal Mode");
+}
+
+void onCameraModeEnter() "onCameraModeEnter" {
+    MinWait();
+    HP().hostHoverTarget = null;
+    HP().hostSelectedTarget = null;
+    SmallMessage(HP(), "Camera Mode");
+}
+

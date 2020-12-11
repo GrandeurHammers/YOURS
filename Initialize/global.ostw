@@ -64,6 +64,7 @@ void GlobalVarSlotSetInit() "【 Subroutine 】▒▒  GlobalVarSlotSetInit"
     TeamSizes = [NumberOfSlots(Team.Team1), NumberOfSlots(Team.Team2), NumberOfSlots(Team.All)];
     // [Team 1, Team 2, Team All]
     NumberOfOpenSlots = [TeamSizes[0] - CountOf(AllPlayers(Team.Team1)), TeamSizes[1] - CountOf(AllPlayers(Team.Team2)), TeamSizes[2] - CountOf(AllPlayers(Team.All))];
+    numberOfSlotsTotal = TeamSizes[2];
 }
 
 void GlobalWorkshopSettingInit() "【 Subroutine 】▒▒  GlobalWorkshopSettingInit"
@@ -89,6 +90,13 @@ void GlobalWorkshopSettingInit() "【 Subroutine 】▒▒  GlobalWorkshopSettin
     // SettingsAll[13] = WorkshopSettingCombo("Communication Wheel", "Open Damage Role Menu (Edit Mode Only)", 0, ["\"Attacking\"", "Default Button = Elo Hell"], 2);
     // SettingsAll[14] = WorkshopSettingCombo("Actions", "Move Bot's Aim Orb  (Edit Mode Only)", 0, ["Hold Secondary Fire + Drag", "Default Button = Right Mouse"], 5);
     // SettingsAll[15] = WorkshopSettingCombo("Communication Wheel", "Destory All bots (Edit Mode Only)", 0, ["\"Goodbye\"", "You will be prompted to confirm"], 3);
+    SettingsCredits[1] = WorkshopSettingCombo("Credits","Based on \"Bot Placement Tool\" By", 0,["Provoxin", "workshop.codes/u/Provoxin", "Bot Placement Tool (TPEGO)"], 0);
+    SettingsCredits[2] = WorkshopSettingCombo("Credits", "NoClip Module By", 0, ["Josbird", "workshop.codes/u/jprosk"], 1);
+    SettingsCredits[3] = WorkshopSettingCombo("Credits", "Entity Selection Formula by", 0, ["Yurodd", "workshop.codes/u/yurodd"], 2);
+    SettingsCredits[4] = WorkshopSettingCombo("Credits", "Modules Selected by", 0, ["CactusPuppy", "workshop.codes/u/CactusPuppy"], 3);
+    SettingsCredits[5] = WorkshopSettingCombo("Credits", "Final Product Developer", 0, ["Scrumrot", "workshop.codes/u/Scrumrot%231685"], 4);
+    SettingsCredits[6] = WorkshopSettingCombo("Special Thanks", "Insperation", 0, ["Andy!", "workshop.codes/u/andygmb", "You are the best!"], 0);
+    SettingsCredits[6] = WorkshopSettingCombo("Special Thanks", "UX Consultant", 0, ["Syynth", "Thank you for the feedback and UX Brainstorming!"], 1);
     // [Inspector Enabled, Logs Enabled ]
     SettingsDeveloper = [
       WorkshopSettingCombo(
@@ -148,17 +156,17 @@ void GlobalSetSelectionOptions() "【 Subroutine 】▒▒  GlobalSetSelectionOp
 
 void GlobalInspectorSetInit() "【 Subroutine 】▒▒  GlobalInspectorSet ▒▒"
 {
-    if (SettingsDeveloper[0] == true)
+    if (SettingsDeveloper[1] == true)
     {
         EnableInspectorRecording();
-        if (SettingsDeveloper[1] == true)
+        if (SettingsDeveloper[2] == true)
         {
             LogToInspector(<"▒▒▒▒ @<0> Inspector Enabled ▒▒▒▒", TotalTimeElapsed()>);
         }
     }
     else
     {
-        if (botHeroes[1] == true)
+        if (botHeroes[2] == true)
         {
             LogToInspector(<"▒▒▒▒ @<0> Inspector Disabled ▒▒▒▒", TotalTimeElapsed()>);
         }
@@ -171,3 +179,4 @@ if (GlobalInitialize == false)
 {
     GlobalInit();
 }
+

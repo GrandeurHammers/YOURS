@@ -2,6 +2,7 @@ import "./Vars/Global.ostw";
 import "./Vars/Player.ostw";
 import "./Macros/hostPlayer.ostw";
 
+
 void abilitiesOff() "Abilities Off" {
     SetAbility1Enabled(HP(), false);
     SetAbility2Enabled(HP(), false);
@@ -26,24 +27,8 @@ void abilitiesOn() "Abilities On" {
 
 
 
-// void createSelectionEffect() "Create Selection Effect"
-// {
-//     ModifyVariable(modeEffectIds, Operation.AppendToArray, LastTextID());
-//     textBudget -= 1;
-//     CreateInWorldText(FilteredArray(EventPlayer(), TotalTimeElapsed() % 0.032 >= 0.016), "▲", UpdateEveryFrame(EyePosition(EventPlayer()) + 100 * (AngleDifference(HorizontalAngleFromDirection(FacingDirectionOf(EventPlayer())), HorizontalAngleFromDirection(menuOriginalFacing)) * CrossProduct(FacingDirectionOf(EventPlayer()), DirectionFromAngles(HorizontalAngleFromDirection(FacingDirectionOf(EventPlayer())), VerticalAngleFromDirection(FacingDirectionOf(EventPlayer())) - 90)) + (AngleDifference(VerticalAngleFromDirection(FacingDirectionOf(EventPlayer())), VerticalAngleFromDirection(menuOriginalFacing)) - 0.2) * DirectionFromAngles(HorizontalAngleFromDirection(FacingDirectionOf(EventPlayer())), VerticalAngleFromDirection(FacingDirectionOf(EventPlayer())) - 90) + 3 * FacingDirectionOf(EventPlayer()))), 3, Clipping.DoNotClip, InworldTextRev.VisibleToPositionStringAndColor, Color.White, Spectators.DefaultVisibility);
-//     ModifyVariable(modeEffectIds, Operation.AppendToArray, LastTextID());
-//     textBudget -= 1;
-// }
-// void MakeSelectionCusor(Icon icon, ref define text)
-// {
-//     CreateHudText(
-//         VisibleTo: AllPlayers(),
-//         Header   : IconString(icon),
-//         Text     : text,
-//         TextColor: Color.SkyBlue
-//     );
-// }
 define allBotsArray() : FilteredArray(AllPlayers(Team.All), ArrayElement() != HP() && IsDummyBot());
+
 void HostModeEditEnter() "【 Subroutine 】▒▒  HostModeEditEnter ▒▒"
 {
     HP().mode = ModeType.Edit;
@@ -68,9 +53,9 @@ if (inEdit() || inCamera())
     StopCamera(HP());
     HP().mode = ModeType.Normal;
     abilitiesOn();
-    HP().hostHoverTarget = null;
-    HP().hostSelectedTarget = null;
+    onNormalModeEnter();
     WaitUntil(btnNotHeld(Button.Interact), 3);
+    MinWait();
     HP().modeChangeLocked = false ;
 }
 
@@ -78,17 +63,21 @@ rule: "Enter Edit Mode"
 if(HP().modeChangeLocked == false)
 if(btnHeld(Button.Interact))
 if(btnNotHeld(Button.Ability1))
-if (inNormal() || inCamera() || inInitMode())
+if (inNormal() || inInitMode())
 {
+    if(HP().hasEdited == false) {
+     SmallMessage(HP(), <"Press [<0>] + [<1>] to enter Camera Mode", InputBindingString(Button.Ability1), InputBindingString(Button.Interact) >);
+    }
     HP().hasEdited = true;
     DisableGameModeHud(HP());
-    // DisableHeroHud(HP());
     HP().modeChangeLocked = true ;
     HP().mode = ModeType.Edit;
     abilitiesOff();
     Resurrect(AllPlayers(Team.All));
     HP().selectionArray = getSelectionArray();
+    onEditModeEnter();
     WaitUntil(btnNotHeld(Button.Interact), 3);
+    MinWait();
     HP().modeChangeLocked = false ;
 }
 
@@ -109,7 +98,9 @@ if (notCamera())
     HP().mode = ModeType.Camera;
     abilitiesOff();
     Resurrect(AllPlayers(Team.All));
+    onCameraModeEnter();
     WaitUntil(btnNotHeld(Button.Interact), 3);
+    MinWait();
     HP().modeChangeLocked = false ;
 }
 
@@ -121,6 +112,4 @@ if (inNormal())
 if (hasSpawnedHP())
 {
     SmallMessage(HP(), <"Press <0> to enter Edit Mode", InputBindingString(Button.Interact)>);
-    Wait(3, WaitBehavior.IgnoreCondition);
-    LoopIfConditionIsTrue();
 }

@@ -6,6 +6,7 @@ globalvar define aa_InteractionDefaultBindings;
 globalvar define BotsLockedMove;
 globalvar define TeamSizes;
 globalvar define NumberOfOpenSlots;
+globalvar define numberOfSlotsTotal;
 globalvar define i;
 globalvar define GlobalInitialize;
 globalvar define ValueCommunications;
@@ -42,6 +43,9 @@ globalvar define allBots;
 globalvar define allBotsSelectionArray;
 globalvar define allLookSelectionArray;
 globalvar define buildInt;
+globalvar define selectionArrayUpdating;
+globalvar define nextHoverCheckTime;
+
 
 
 

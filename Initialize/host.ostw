@@ -12,8 +12,9 @@ define topHudCreate() : HP().hostSelectedTarget == false && HP().hostHoverTarget
 define showCreate(): HP().hostSelectedTarget == false && HP().hostHoverTarget == false;
 define showMove(): HP().hostSelectedTarget == false && HP().hostHoverTarget == true;
 define showRemove() : HP().hostSelectedTarget == false && HP().hostHoverTarget == true && HP().hostHoverTarget[2] == EntityType.DummyBot;
-define showSwapTeam() : inEdit() && HP().hostSelectedTarget == false && HP().hostHoverTarget == true && HP().hostHoverTarget[2] == EntityType.DummyBot && canSwap(botOppositeTeam());
+define showSwapTeam() : inEdit() && HP().hostSelectedTarget == false && HP().hostHoverTarget == true && HP().hostHoverTarget[2] == EntityType.DummyBot;
 define showSwapHero() : inEdit() && HP().hostSelectedTarget == false && HP().hostHoverTarget == true && HP().hostHoverTarget[2] == EntityType.DummyBot;
+define bothTeamsAreFull() : CountOf(AllPlayers(Team.All)) == numberOfSlotsTotal;
 define makeHPHud(define showHost, define text, define order, Color color = Color.White): 
 CreateHudText(
     VisibleTo: showHost ? HP() : [],
@@ -25,7 +26,7 @@ CreateHudText(
     HeaderColor: Color.White,
     SubheaderColor: Color.White,
     TextColor: color,
-    Reevaluation: HudTextRev.VisibleToAndString,
+    Reevaluation: HudTextRev.VisibleToStringAndColor,
     Spectators: Spectators.DefaultVisibility);
 
 define rainbowVomit(): ValueInArray([ Color.White, Color.Yellow, Color.Green, Color.Purple, Color.Red, Color.Blue, Color.Aqua, Color.Orange, Color.SkyBlue, Color.Turquoise, Color.LimeGreen, Color.Black, Color.Rose, Color.Violet, Color.Gray], UpdateEveryFrame(RandomInteger(0, 15) + (TotalTimeElapsed() * 0)));
@@ -55,6 +56,20 @@ define showDragText(): canSeeCusorHudHP() && HP().hostHoverTarget[1] == true && 
 define showIncreaseRange() :canSeeCusorHudHP() && HP().hostSelectedTarget == true && btnHeld(Button.SecondaryFire);
 define showDecreaseRange() :canSeeCusorHudHP() && HP().hostSelectedTarget == true && btnHeld(Button.SecondaryFire);
 define showRange() :canSeeCusorHudHP() && HP().hostSelectedTarget == true && btnHeld(Button.SecondaryFire);
+define oppositeTeamIsFull(): 
+  HP().hostHoverTarget[1] == true &&
+  CountOf(
+    AllPlayers(
+      OppositeTeamOf(
+        TeamOf(HP().hostHoverTarget[1])
+      )
+    )
+  ) >=
+  NumberOfSlots(
+    OppositeTeamOf(
+      TeamOf(HP().hostHoverTarget[1])
+    )
+  );
 rule: "【 Initialize 】▒▒  Host  ▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒"
 Event.OngoingPlayer
 if (HP().initialize == false)
@@ -72,17 +87,15 @@ if(EventPlayer() == HP())
     makeHPHud(HP(), " ", 4);
     makeHPHud(HP(), " ", 5);
     makeHPHud(HP(), " ", 6);
-    makeHPHud(HP(), " ", 6);
-    makeHPHud(showIncreaseRange(), <"[<0>] Increase Range", InputBindingString(Button.Ability2)>, 7, btnHeld(Button.Ability2) ? Color.Orange : Color.White);
+    makeHPHud(showIncreaseRange(), <"[<0>] Increase", InputBindingString(Button.Ability2)>, 7, btnHeld(Button.Ability2) ? Color.Orange : Color.White);
     makeHPHud(canSeeCusorHudHP() && showDragText(), <"<0> to Drag", InputBindingString(Button.SecondaryFire)>, 8, btnHeld(Button.SecondaryFire) ? Color.Orange : Color.White);
-    makeHPHud(canSeeCusorHudHP() && showCreateText(), <"<0> Create Bot", InputBindingString(Button.PrimaryFire)>, 8, btnHeld(Button.PrimaryFire) ? Color.Orange : Color.White);
+    makeHPHud(canSeeCusorHudHP() && showCreateText(), <"<0> Create Bot", InputBindingString(Button.PrimaryFire)>, 8, bothTeamsAreFull() ? Color.Gray : btnHeld(Button.PrimaryFire) ? Color.Orange : Color.White);
     makeHPHud(canSeeCusorHudHP() && showRange(), <"<Range <0> m>", HP().placementDistance >, 8, btnHeld(Button.PrimaryFire) ? Color.Orange : Color.White);
     makeHPHud(showDecreaseRange(), <"[<0>] Decrease", InputBindingString(Button.Ultimate)>, 9, btnHeld(Button.Ultimate) ? Color.Orange : Color.White);
-    makeHPHud(showSwapTeam(), <"[<0>] Swap Team", InputBindingString(Button.Ultimate)>, 9, btnHeld(Button.Ultimate) ? Color.Orange : Color.White);
+    makeHPHud(showSwapTeam(), <"[<0>] Swap Team<1>", InputBindingString(Button.Ultimate), oppositeTeamIsFull() ? <"<0> FUll", OppositeTeamOf(TeamOf(HP().hostHoverTarget[1]))> : "" >, 9, oppositeTeamIsFull() ? Color.Gray : btnHeld(Button.Ultimate) ? Color.Orange : Color.White);
     makeHPHud(showSwapHero(), <"[<0>] Swap Hero", InputBindingString(Button.Reload)>, 10, btnHeld(Button.Reload) ? Color.Orange : Color.White);
     makeHPHud(showSwapHero(), <"[<0>] Remove", InputBindingString(Button.Melee)>, 11, btnHeld(Button.Melee) ? Color.Orange : Color.White);
-   CreateInWorldText(HP(), "Rainbow Vomit", placementPositionHP(), 2, Clipping.ClipAgainstSurfaces, InworldTextRev.VisibleToPositionStringAndColor, rainbowVomit());
-  HP().initialize = true;
+    HP().initialize = true;
 }
 
 

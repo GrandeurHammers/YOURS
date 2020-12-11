@@ -44,7 +44,7 @@ if (btnHeld(Button.PrimaryFire))
     else {
        SmallMessage(HP(), <"Both Teams Are Full!", HP().fullTeam, HP().nextBotTeam>);
     }
-    SetHostSelectionArray();
+    updateSelectionArray();
 }
 
 rule: "onHover Selection Entity"
@@ -52,6 +52,7 @@ if (inEdit())
 if(HP().selectionArray != EmptyArray())
 if(selectionEntitiesInLOS() != EmptyArray())
 if(HP().hostSelectedTarget == false)
+if(selectionArrayUpdating == false)
 {
     HP().hostHoverTarget = HP().hostSelectedTarget == true ? HP().hostSelectedTarget : hoverTargetHP();
     MinWait();
@@ -73,7 +74,7 @@ if(btnHeld(Button.SecondaryFire) == true )
       HP().hostSelectedTarget[1] == EvaluateOnce(HP().hostSelectedTarget[1]) ? UpdateEveryFrame(placementPositionHP()) : EvaluateOnce(HP().hostSelectedTarget[1]).botForcedPosition, true);
     }
     MinWait();
-    SetHostSelectionArray();
+    updateSelectionArray();
 
     
 }
@@ -114,7 +115,7 @@ if(HP().hostSelectedTarget == true)
     HP().hostHoverTarget = HP().hostSelectedTarget;
     HP().hostSelectedTarget = null;
     MinWait();
-    SetHostSelectionArray();
+    updateSelectionArray();
     
 }
 
@@ -150,14 +151,14 @@ if(HP().botTeamButtonLocked == false)
         WaitUntil(HP().targetedDummy.initialize == true, .100);
         HP().targetedDummy.botForcedPosition = HP().botTeamSwapData[2];
         HP().targetedDummy.botLookPosition = HP().botTeamSwapData[3];
-        SetHostSelectionArray();
+        updateSelectionArray();
     }
     else {
         SmallMessage(HP(), <"<0> is FUll!", OppositeTeamOf(TeamOf(HP().hostHoverTarget[1]))>);
     }
     WaitUntil(btnHeld(Button.Ultimate) == false, 3);
      HP().botTeamSwapData = null;
-     SetHostSelectionArray();
+     updateSelectionArray();
      HP().botTeamButtonLocked = false;
      
 }
@@ -173,7 +174,7 @@ if(HP().removeBotButtonLocked == false)
     HP().removeBotButtonLocked = true;
     DestroyDummyBot(TeamOf(HP().hostHoverTarget[1]), SlotOf(HP().hostHoverTarget[1]));
     MinWait();
-    SetHostSelectionArray();
+    updateSelectionArray();
     HP().removeBotButtonLocked = false;
 }
 void  SetBotSwapData() "【 Subroutine 】▒▒ SetBotSwapData" {
@@ -186,7 +187,7 @@ void  SetBotSwapData() "【 Subroutine 】▒▒ SetBotSwapData" {
         SlotOf(HP().targetedDummy)
         ];
 }
-void  SetHostHeroSwapData() "【 Subroutine 】▒▒ etHostHeroSwapData" {
+void  SetHostHeroSwapData() "【 Subroutine 】▒▒ SetHostHeroSwapData" {
     HP().hostSwapHeroData = [HeroOf(HP()), PositionOf(HP()), FacingDirectionOf(HP())];
 }
 
@@ -211,7 +212,7 @@ void handleBotsHeroChange() "【 Subroutine 】▒▒ handleBotsHeroChange" {
   WaitUntil(HP().targetedDummy.initialize == true, 1);
   HP().targetedDummy.botForcedPosition = HP().botSwapHeroData[2];
   HP().targetedDummy.botLookPosition = HP().botSwapHeroData[3];
-  SetHostSelectionArray();
+  updateSelectionArray();
 }
 void  SwapHostAndBotHero() "【 Subroutine 】▒▒ SwapHostAnyBotHero" {
     SetBotSwapData();
@@ -219,7 +220,7 @@ void  SwapHostAndBotHero() "【 Subroutine 】▒▒ SwapHostAnyBotHero" {
     SetAllowedHeroes(HP(), FilteredArray(AllHeroes(), ArrayElement() != HeroOf(HP())));
     DestroyDummyBot(HP().botSwapHeroData[1], HP().botSwapHeroData[4]);
     Wait(.5);
-    SetHostSelectionArray();
+    updateSelectionArray();
     ResetHeroAvailability(HP());
     WaitUntil(HasSpawned(HP()), 9999);
     HP().botSwapHeroData[0] = HeroOf(HP());
@@ -239,7 +240,7 @@ if(HP().hostHoverTarget[2] == EntityType.DummyBot)
 {
     HP().botChangeHeroButtonLocked = true;
     SwapHostAndBotHero();
-    SetHostSelectionArray();
+    updateSelectionArray();
     HP().hostHoverTarget = null;
     HP().selectedTarget = null;
     WaitUntil(btnHeld(Button.Reload) == false, 3);
