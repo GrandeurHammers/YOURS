@@ -69,7 +69,6 @@ if(btnHeld(Button.SecondaryFire) == true )
     HP().placementDistance = DistanceBetween(EyePosition(HP()), HP().hostHoverTarget);
     if(HP().hostSelectedTarget[2] == EntityType.DummyBot) {
       SetGravity(HP().hostSelectedTarget[1], 0);
-      StopForcingPlayerPosition(HP().hostSelectedTarget[1]);
       StartForcingPlayerPosition(HP().hostSelectedTarget[1],
       HP().hostSelectedTarget[1] == EvaluateOnce(HP().hostSelectedTarget[1]) ? UpdateEveryFrame(placementPositionHP()) : EvaluateOnce(HP().hostSelectedTarget[1]).botForcedPosition, true);
     }
@@ -94,7 +93,7 @@ if(btnHeld(Button.Ultimate) == true )
 if(HP().botTeamButtonLocked == false)
 {
   HP().botTeamButtonLocked = true;
-  WaitUntil(btnHeld(Button.Ultimate) == false, 3);
+  WaitUntil(btnHeld(Button.Ultimate) == false, 1);
   HP().botTeamButtonLocked = false;
 }
 
@@ -156,7 +155,7 @@ if(HP().botTeamButtonLocked == false)
     else {
         SmallMessage(HP(), <"<0> is FUll!", OppositeTeamOf(TeamOf(HP().hostHoverTarget[1]))>);
     }
-    WaitUntil(btnHeld(Button.Ultimate) == false, 3);
+    WaitUntil(btnHeld(Button.Ultimate) == false, 1);
      HP().botTeamSwapData = null;
      updateSelectionArray();
      HP().botTeamButtonLocked = false;
@@ -243,7 +242,7 @@ if(HP().hostHoverTarget[2] == EntityType.DummyBot)
     updateSelectionArray();
     HP().hostHoverTarget = null;
     HP().selectedTarget = null;
-    WaitUntil(btnHeld(Button.Reload) == false, 3);
+    WaitUntil(btnHeld(Button.Reload) == false, 1);
     HP().botChangeHeroButtonLocked = false;
 }
 
