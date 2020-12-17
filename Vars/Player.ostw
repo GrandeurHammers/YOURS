@@ -61,6 +61,7 @@ playervar define botMoveButtonLocked;
 playervar define botChangeHeroButtonLocked;
 playervar define modeChangeLocked;
 playervar define removeBotButtonLocked;
+playervar define botPositionIsForced;
 
 
 

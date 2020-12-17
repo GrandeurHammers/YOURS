@@ -6,14 +6,14 @@ define remainingSlotCount() : 12 - CountOf(AllPlayers(Team.All));
 define canSeeCusorHudHP() : inEdit() && !HP().isInMenu;
 define showHost() : canSeeCusorHudHP() ? HP() : [];
 define canSwap(Team team): NumberOfSlots(team) - CountOf(AllPlayers(team)) > 0;
-define showCreateText(): inEdit() && !HP().isInMenu && HP().hostHoverTarget[1] == false && HP().hostSelectedTarget == false;
+define showCreateText(): inEdit() && !HP().isInMenu && HP().hostHoverTarget[1] == false && HP().hostSelectedTarget == EmptyArray();
 define botOppositeTeam(): OppositeTeamOf(TeamOf(HP().hostHoverTarget[1]));
-define topHudCreate() : HP().hostSelectedTarget == false && HP().hostHoverTarget == false && remainingSlotCount() > 0;
-define showCreate(): HP().hostSelectedTarget == false && HP().hostHoverTarget == false;
-define showMove(): HP().hostSelectedTarget == false && HP().hostHoverTarget == true;
-define showRemove() : HP().hostSelectedTarget == false && HP().hostHoverTarget == true && HP().hostHoverTarget[2] == EntityType.DummyBot;
-define showSwapTeam() : inEdit() && HP().hostSelectedTarget == false && HP().hostHoverTarget == true && HP().hostHoverTarget[2] == EntityType.DummyBot;
-define showSwapHero() : inEdit() && HP().hostSelectedTarget == false && HP().hostHoverTarget == true && HP().hostHoverTarget[2] == EntityType.DummyBot;
+define topHudCreate() : HP().hostSelectedTarget == EmptyArray() && HP().hostHoverTarget == EmptyArray() && remainingSlotCount() > 0;
+define showCreate(): HP().hostSelectedTarget == EmptyArray() && HP().hostHoverTarget == EmptyArray();
+define showMove(): HP().hostSelectedTarget == EmptyArray() && HP().hostHoverTarget != EmptyArray();
+define showRemove() : HP().hostSelectedTarget == EmptyArray() && HP().hostHoverTarget != EmptyArray() && HP().hostHoverTarget[2] == EntityType.DummyBot;
+define showSwapTeam() : !isFFA && inEdit() && HP().hostSelectedTarget == EmptyArray() && HP().hostHoverTarget != EmptyArray() && HP().hostHoverTarget[2] == EntityType.DummyBot;
+define showSwapHero() : inEdit() && HP().hostSelectedTarget == EmptyArray() && HP().hostHoverTarget != EmptyArray() && HP().hostHoverTarget[2] == EntityType.DummyBot;
 define bothTeamsAreFull() : CountOf(AllPlayers(Team.All)) == numberOfSlotsTotal;
 define makeHPHud(define showHost, define text, define order, Color color = Color.White): 
 CreateHudText(
@@ -52,10 +52,10 @@ if(HP().botChangeHeroButtonLocked == false)
     WaitUntil(btnHeld(Button.Reload) == false, 1);
     HP().botChangeHeroButtonLocked = false;
 }
-define showDragText(): canSeeCusorHudHP() && HP().hostHoverTarget[1] == true && HP().hostSelectedTarget == false; 
-define showIncreaseRange() :canSeeCusorHudHP() && HP().hostSelectedTarget == true && btnHeld(Button.SecondaryFire);
-define showDecreaseRange() :canSeeCusorHudHP() && HP().hostSelectedTarget == true && btnHeld(Button.SecondaryFire);
-define showRange() :canSeeCusorHudHP() && HP().hostSelectedTarget == true && btnHeld(Button.SecondaryFire);
+define showDragText(): canSeeCusorHudHP() && HP().hostHoverTarget[1] == true && HP().hostSelectedTarget == EmptyArray(); 
+define showIncreaseRange() :canSeeCusorHudHP() && HP().hostSelectedTarget != EmptyArray() && btnHeld(Button.SecondaryFire);
+define showDecreaseRange() :canSeeCusorHudHP() && HP().hostSelectedTarget != EmptyArray() && btnHeld(Button.SecondaryFire);
+define showRange() :canSeeCusorHudHP() && HP().hostSelectedTarget != EmptyArray() && btnHeld(Button.SecondaryFire);
 define oppositeTeamIsFull(): 
   HP().hostHoverTarget[1] == true &&
   CountOf(
@@ -77,9 +77,12 @@ if(EventPlayer() == HP())
 {
     HP().mode = ModeType.Normal;
     HP().placementDistance = 12;
-    HP().nextBotTeam = Team.Team2;
+    HP().nextBotTeam = isFFA == true ? Team.All : OppositeTeamOf(TeamOf(HP()));
     HP().nextBotRole = Role.All;
     HP().nextBotHero = RandomValueInArray(AllHeroes());
+    HP().hostHoverTarget = EmptyArray();
+    HP().hostSelectedTarget = EmptyArray();
+    HP().selectionArray = EmptyArray();
     makeHPHud(HP(), " ", 0);
     makeHPHud(HP(), " ", 1);
     makeHPHud(HP(), " ", 2);

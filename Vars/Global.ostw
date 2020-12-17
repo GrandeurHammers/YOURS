@@ -44,7 +44,7 @@ globalvar define allBotsSelectionArray;
 globalvar define allLookSelectionArray;
 globalvar define buildInt;
 globalvar define selectionArrayUpdating;
-globalvar define nextHoverCheckTime;
+globalvar define isFFA;
 
 
 
