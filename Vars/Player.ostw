@@ -1,51 +1,18 @@
 import "../SelectionEntityClass.ostw";
-playervar define isEditing;
+
+playervar define initialize;
 playervar define noclipPosition;
 playervar define placementDistance;
-playervar define isChangingBot;
-playervar define prevFacings;
 playervar define originalHero;
 playervar define hasEdited;
-playervar define initialize;
-playervar define BotLookOrbIsHovered;
 playervar define CursorPosition;
-playervar define PlayerEffectsToDestroy;
-playervar define PlayerEffectsToDestroyControleInt;
-playervar define aa_ActiveLookPositionBot;
-playervar define aa_HostCursor;
-playervar define BotLookOrbGrabedBy;
+
 playervar ModeType mode;
 
-playervar define _extendedPlayerCollection;
-playervar define isInMenu 127;
-playervar define menuFrame 126;
-playervar define exitButtonIcon!;
-playervar define menuOriginalFacing 125;
-playervar define newButton 124;
-playervar define buttons 123;
-playervar define lastMenuButtonID 122;
-playervar define loadingText!;
-playervar define destroyButtonID 121;
-playervar define currActionID 120;
-playervar define iter!;
-playervar define buttonModification 119;
-playervar define getProperties 118;
-playervar define modeEffectIds;
-
-playervar Team botTeam;
-playervar Role botRole;
-playervar Hero botHero;
 playervar define grabbedBot;
-playervar define targetedDummy;
-playervar define hoverTarget;
-playervar define selectedTarget;
-playervar define botLookOrbIsSelected;
-playervar define botLookOrbIsHovered;
-
 playervar Team nextBotTeam;
 playervar Role nextBotRole;
 playervar Hero nextBotHero;
-playervar EntityType targetEntityType;
 playervar define botLookPosition;
 playervar Team fullTeam;
 playervar Vector hostCursor;
@@ -61,7 +28,10 @@ playervar define botMoveButtonLocked;
 playervar define botChangeHeroButtonLocked;
 playervar define modeChangeLocked;
 playervar define removeBotButtonLocked;
-playervar define botPositionIsForced;
+playervar define createButtonLocked;
+playervar define targetedDummy;
+playervar define _holdThisForMe;
+
 
 
 

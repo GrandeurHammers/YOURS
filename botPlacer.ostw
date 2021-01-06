@@ -17,11 +17,13 @@ define ensureTeamHasOpenSlot(Team team): remainingSlots(team) > 0 ? team : remai
 rule: "Create bot"
 if (inEdit())
 if (btnHeld(Button.PrimaryFire))
+if(HP().createButtonLocked == false)
 if(HP().hostSelectedTarget == EmptyArray())
 if(HP().hostHoverTarget == EmptyArray())
 {
     HP().placementDistance = 12;
-    if(remainingSlots(HP().nextBotTeam) <= 0 && remainingSlots(OppositeTeamOf(HP().nextBotTeam)) > 0) {
+    HP().createButtonLocked = true;
+    if(!isFFA && remainingSlots(HP().nextBotTeam) <= 0 && remainingSlots(OppositeTeamOf(HP().nextBotTeam)) > 0) {
         HP().fullTeam = HP().nextBotTeam;
         HP().nextBotTeam = OppositeTeamOf(HP().nextBotTeam);
         if(remainingSlots(HP().nextBotTeam) > 0) {
@@ -41,9 +43,12 @@ if(HP().hostHoverTarget == EmptyArray())
         HP().nextBotHero = FilteredArray(RandomValueInArray(AllHeroes()), ArrayElement() != HP().nextBotHero);
     }
     else {
-       SmallMessage(HP(), <"Both Teams Are Full!", HP().fullTeam, HP().nextBotTeam>);
+       SmallMessage(HP(), !isFFA ? <"Both Teams Are Full!", HP().fullTeam, HP().nextBotTeam> : "Game Is Full!");
     }
     updateSelectionArray();
+    WaitUntil(btnHeld(Button.PrimaryFire) == false, 1);
+    MinWait();
+    HP().createButtonLocked = false;
 }
 
 rule: "onHover Selection Entity"
@@ -53,7 +58,11 @@ if(selectionEntitiesInLOS() != EmptyArray())
 if(HP().hostSelectedTarget == EmptyArray())
 if(selectionArrayUpdating == false)
 {
-    HP().hostHoverTarget = HP().hostSelectedTarget != EmptyArray() ? HP().hostSelectedTarget : hoverTargetHP();
+    HP()._holdThisForMe = HP().hostSelectedTarget != EmptyArray() && EntityExists(HP().hostSelectedTarget[1]) ? HP().hostSelectedTarget : hoverTargetHP();
+    HP().hostHoverTarget = HP()._holdThisForMe == false && HP()._holdThisForMe != EmptyArray() ? EmptyArray() : HP()._holdThisForMe;
+    if(HP()._holdThisForMe == false && HP()._holdThisForMe != EmptyArray()) {
+        SetHostSelectionArray();
+    }
     MinWait();
     LoopIfConditionIsTrue();
 }
@@ -93,6 +102,7 @@ if(HP().botTeamButtonLocked == false)
 {
   HP().botTeamButtonLocked = true;
   WaitUntil(btnHeld(Button.Ultimate) == false, 1);
+  MinWait();
   HP().botTeamButtonLocked = false;
 }
 
@@ -118,6 +128,7 @@ if(HP().hostSelectedTarget != EmptyArray())
 }
 
 rule: "Swap Bot Teams"
+if(!isFFA)
 if (inEdit())
 if(btnHeld(Button.Ultimate) == true )
 if(btnHeld(Button.SecondaryFire) == false )
@@ -240,25 +251,29 @@ if(HP().hostHoverTarget[2] == EntityType.DummyBot)
     SwapHostAndBotHero();
     updateSelectionArray();
     HP().hostHoverTarget = EmptyArray();
-    HP().selectedTarget = EmptyArray();
+    HP().hostSelectedTarget = EmptyArray();
     WaitUntil(btnHeld(Button.Reload) == false, 1);
     HP().botChangeHeroButtonLocked = false;
 }
 
 
 rule: "Ensure selectedTarget is never false"
-if (HP().selectedTarget != EmptyArray())
-if(HP().selectedTarget == false)
+if (HP().hostSelectedTarget != EmptyArray())
+if(!EntityExists(HP().hostSelectedTarget[1]))
 {
     Wait(.100, WaitBehavior.AbortWhenFalse);
-    HP().selectedTarget = EmptyArray();
+    HP().hostSelectedTarget = EmptyArray();
+    MinWait();
+    LoopIfConditionIsTrue();
 }
 rule: "Ensure hostHoverTarget is never false"
 if (HP().hostHoverTarget != EmptyArray())
-if(HP().hostHoverTarget == false)
+if(!EntityExists(HP().hostHoverTarget[1]))
 {
     Wait(.100, WaitBehavior.AbortWhenFalse);
     HP().hostHoverTarget = EmptyArray();
+    MinWait();
+    LoopIfConditionIsTrue();
 }
 
 

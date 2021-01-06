@@ -32,7 +32,11 @@ if (
     (propulsionCheck()) == true)
 {
     ApplyImpulse(HP(), velocityOfHP() * -1, speedOfHP() * 0.03, Relative.ToWorld, ContraryMotion.Incorporate);
-    ApplyImpulse(HostPlayer(), Normalize(FacingDirectionOf(HostPlayer()) * ZOf(ThrottleOf(HostPlayer())) + WorldVectorOf(Left(), HostPlayer(), LocalVector.Rotation) * XOf(ThrottleOf(HostPlayer())) + Up() * (IsButtonHeld(HostPlayer(), Button.Jump) - IsButtonHeld(HostPlayer(), Button.Crouch))), (60 + 400 * IsButtonHeld(HostPlayer(), Button.Reload) - SpeedOf(HostPlayer())) / 62.5, Relative.ToWorld, ContraryMotion.Incorporate);
+    ApplyImpulse(HostPlayer(), 
+    Normalize(
+        FacingDirectionOf(HostPlayer()) *
+            ZOf(ThrottleOf(HostPlayer())) +
+            WorldVectorOf(Left(), HostPlayer(), LocalVector.Rotation) * XOf(ThrottleOf(HostPlayer())) + Up() * (IsButtonHeld(HostPlayer(), Button.Jump) - IsButtonHeld(HostPlayer(), Button.Crouch))), (60 + 400 * IsButtonHeld(HostPlayer(), Button.Ability1) - SpeedOf(HostPlayer())) / 62.5, Relative.ToWorld, ContraryMotion.Incorporate);
     
     MinWait();
     LoopIfConditionIsTrue();

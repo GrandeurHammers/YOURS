@@ -46,11 +46,6 @@ globalvar define buildInt;
 globalvar define selectionArrayUpdating;
 globalvar define isFFA;
 
-
-
-
-
-// Button click sounds
-
-
-
+globalvar define loading;
+globalvar define _bots;
+globalvar define[] botSavedValues;

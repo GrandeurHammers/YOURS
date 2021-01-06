@@ -23,7 +23,6 @@ define notInMode(ModeType mode) : HP().mode != mode;
 define notInNormal() : notInMode(ModeType.Normal);
 define notInEdit() : notInMode(ModeType.Edit);
 define notCamera() : notInMode(ModeType.Camera);
-define menuOpen() : HP().isInMenu;
 define existsHP() : EntityExists(HP());
 
 define throttleOfHP() : ThrottleOf(HP());
@@ -58,6 +57,14 @@ Vector cameraLookPosition() : eyePositionHP() + facingDirectionHP() * 2;
 define hasSpawnedHP(): HasSpawned(HP());
 
 
+define placementPositionHPRaw(): RayCastHitPosition(
+            StartPOS: UpdateEveryFrame(EyePosition(HP())),
+            EndPOS: UpdateEveryFrame(EyePosition(HP()) + facingDirectionHP() * HP().placementDistance),
+            PlayersToInclude: null,
+            PlayersToExclude: AllPlayers(),
+            IncludePlayerOwnedObjects: false
+            );
+
 define placementPositionHP(): UpdateEveryFrame(RayCastHitPosition(
             StartPOS: UpdateEveryFrame(EyePosition(HP())),
             EndPOS: UpdateEveryFrame(EyePosition(HP()) + facingDirectionHP() * HP().placementDistance),
@@ -77,7 +84,7 @@ define getTargetType(define target):
 define onlyHoverTarget(): HP().hostHoverTarget != EmptyArray() && HP().hostSelectedTarget == EmptyArray();
 define hasSelectedTarget(): HP().hostSelectedTarget != EmptyArray();
 
-define getAllBots():  FilteredArray(AllPlayers(Team.All), ArrayElement() != HP() == true);
+define getAllBots():  FilteredArray(AllPlayers(Team.All), ArrayElement() != HP() == true && IsAlive(ArrayElement()) && EntityExists(ArrayElement()) == true);
 define  getSelectionBotArray(): MappedArray(getAllBots(), [PositionOf(ArrayElement()), ArrayElement(), EntityType.DummyBot]);
 define  getSelectionLookOrbArray(): MappedArray(getAllBots(), [ArrayElement().botLookPosition, ArrayElement(), EntityType.LookOrb]);
 
@@ -86,8 +93,27 @@ define  setupSelectionArray(): Append(getSelectionBotArray(), getSelectionLookOr
 
 define  getSelectionArray(): FilteredArray(setupSelectionArray(), ArrayElement()[0] == true);
 
-define selectionEntitiesInLOS(): FilteredArray(HP().selectionArray, IsInViewAngle(HP(), ArrayElement()[0], 120) == true && IsInLineOfSight(eyePositionHP(), ArrayElement()[0] + Vector(0,0.25,0), BarrierLOS.NoBarriersBlock)   );
-
+define selectionEntitiesInLOS():
+FilteredArray(
+    HP().selectionArray,
+    IsInViewAngle(
+     HP(),
+     ArrayElement()[0],
+     120
+    ) == true &&
+    IsInLineOfSight(
+      eyePositionHP(),
+      ArrayElement()[0] +
+      Vector(0,0.25,0),
+    BarrierLOS.NoBarriersBlock
+    ) == true &&
+    EntityExists(
+     ArrayElement()[1]
+    ) == true &&
+    IsAlive(
+      ArrayElement()[1]
+    ) == true
+);
 
 define closestSelectionEntity(define vectors) : 
 FirstOf(
@@ -102,7 +128,7 @@ FirstOf(
         DistanceBetween(eyePositionHP() + facingDirectionHP() * DistanceBetween(eyePositionHP(), ArrayElement()), ArrayElement()) <= 1.25)
     );
 
-define hoverTargetHP(): notInEdit() || HP().selectionArray == EmptyArray() ? EmptyArray() : closestSelectionEntity(selectionEntitiesInLOS()) == true ? closestSelectionEntity(selectionEntitiesInLOS()) : EmptyArray();
+define hoverTargetHP(): notInEdit() || HP().selectionArray == EmptyArray() ? EmptyArray() : closestSelectionEntity(selectionEntitiesInLOS());
 
 
 
@@ -110,7 +136,7 @@ void SetHostSelectionArray() "【 Subroutine 】▒▒  SetHostSelectionArray  �
 {
         allBots = getAllBots();
         HP().selectionArray = EmptyArray();
-        for (define i = 0; i < CountOf(allBots); i++)
+        for (i = 0; i < CountOf(allBots); i++)
         {
             allBotsSelectionArray[i][0] = PositionOf(allBots[i]) + Vector(0,1,0);
             allBotsSelectionArray[i][1] = allBots[i];
@@ -122,8 +148,51 @@ void SetHostSelectionArray() "【 Subroutine 】▒▒  SetHostSelectionArray  �
         HP().selectionArray = FilteredArray(Append(allBotsSelectionArray, allLookSelectionArray), EntityExists(ArrayElement()[1]) == true);
 }
 
+void SaveBotValues() "【 Subroutine 】▒▒  SaveBotValues ▒▒" {
+  _bots = FilteredArray(AllPlayers(Team.All), ArrayElement() != HP());
+  for (i = 0; i < CountOf(_bots); i++) {
+    botSavedValues[i] = [
+            _bots[i],
+            HeroOf(_bots[i]),
+            TeamOf(_bots[i]),
+            SlotOf(_bots[i]),
+            _bots[i].botForcedPosition == true ? _bots[i].botForcedPosition : PositionOf(_bots[i]),
+            _bots[i].botLookPosition
+        ];
+  }
+}
 
+void LoadSavedBotValues() "【 Subroutine 】▒▒  LoadSavedBotValues ▒▒"
+{
+    for (i = 0; i < CountOf(botSavedValues); i++)
+    {
+        if(EntityExists(botSavedValues[i][0]) == false || IsDead(botSavedValues[i][0]) ) {
+          CreateDummyBot(
+              botSavedValues[i][1],
+              botSavedValues[i][2],
+              botSavedValues[i][3],
+              botSavedValues[i][4],
+              botSavedValues[i][5]
+          );
+          botSavedValues[i] = 
+          [
+              LastCreatedEntity(),
+              botSavedValues[i][1],
+              botSavedValues[i][2],
+              botSavedValues[i][3],
+              botSavedValues[i][4],
+              botSavedValues[i][5]
+          ];
+        } 
+    }
+    MinWait();
+    for (define i = 0; i < CountOf(botSavedValues); i++) {
+        botSavedValues[i][0].botForcedPosition = botSavedValues[i][4];
+        botSavedValues[i][0].botLookPosition = botSavedValues[i][5];
+    }
+}
 void updateSelectionArray() "updateSelectionArray" {
+    MinWait();
     selectionArrayUpdating = true;
     SetHostSelectionArray();
     MinWait();
@@ -131,6 +200,7 @@ void updateSelectionArray() "updateSelectionArray" {
 }
 void onEditModeEnter() "onEditModeEnter" {
     MinWait();
+    LoadSavedBotValues();
     HP().hostHoverTarget = EmptyArray();
     HP().hostSelectedTarget = EmptyArray();
     selectionArrayUpdating = true;
@@ -138,13 +208,16 @@ void onEditModeEnter() "onEditModeEnter" {
     MinWait();
     selectionArrayUpdating = false;
     SmallMessage(HP(), "Edit Mode");
+    SetInvisible(HP(), InvisibleTo.None);
 }
 
 void onNormalModeEnter() "onNormalModeEnter" {
     MinWait();
+    SaveBotValues();
     HP().hostHoverTarget = EmptyArray();
     HP().hostSelectedTarget = EmptyArray();
     SmallMessage(HP(), "Normal Mode");
+    SetInvisible(HP(), InvisibleTo.None);
 }
 
 void onCameraModeEnter() "onCameraModeEnter" {
@@ -152,5 +225,6 @@ void onCameraModeEnter() "onCameraModeEnter" {
     HP().hostHoverTarget = EmptyArray();
     HP().hostSelectedTarget = EmptyArray();
     SmallMessage(HP(), "Camera Mode");
+    SetInvisible(HP(), InvisibleTo.All);
 }
 
