@@ -4,6 +4,19 @@ import "./Macros/hostPlayer.ostw";
 
 
 void abilitiesOff() "Abilities Off" {
+    if(HeroOf(HP()) == Hero.WreckingBall && IsUsingAbility1(HP()) == true) {
+      Wait(0.17);
+      PressButton(HP(), Button.Ability1);
+    }
+    if(HeroOf(HP()) == Hero.Bastion && IsInAlternateForm(HP()) == true) {
+      DisallowButton(HP(), Button.Ability1);
+      AllowButton(HP(), Button.Ability1);
+      PressButton(HP(), Button.Ability1);
+    }
+    if(HeroOf(HP()) == Hero.Mei && IsUsingAbility1(HP()) == true) {
+        PressButton(HP(), Button.SecondaryFire);
+    }
+    SetAbility1Enabled(HP(), false);
     SetAbility1Enabled(HP(), false);
     SetAbility2Enabled(HP(), false);
     SetPrimaryFireEnabled(HP(), false);
@@ -12,6 +25,7 @@ void abilitiesOff() "Abilities Off" {
     SetMeleeEnabled(HP(), false);
     SetJumpEnabled(HP(), false);
     SetCrouchEnabled(HP(), false);
+    DisallowButton(HP(), Button.Crouch);
 }
 
 void abilitiesOn() "Abilities On" {
@@ -23,23 +37,16 @@ void abilitiesOn() "Abilities On" {
     SetMeleeEnabled(HP(), true);
     SetJumpEnabled(HP(), true);
     SetCrouchEnabled(HP(), true);
+    AllowButton(HP(), Button.Crouch);
 }
 
 
 
 define allBotsArray() : FilteredArray(AllPlayers(Team.All), ArrayElement() != HP() && IsDummyBot());
 
-void HostModeEditEnter() "【 Subroutine 】▒▒  HostModeEditEnter ▒▒"
-{
-    HP().mode = ModeType.Edit;
-    SmallMessage(HP(), "Edit Mode");
-}
 
-void PlayerModeEditExit() "【 Subroutine 】▒▒  PlayerModeEditExit ▒▒"
-{
-    
-}
 
+// 
 rule: "Enter Normal Mode"
 if(HP().modeChangeLocked == false)
 if(btnHeld(Button.Interact))
@@ -77,7 +84,7 @@ if (inNormal() || inInitMode())
     onEditModeEnter();
     WaitUntil(btnNotHeld(Button.Interact), 3);
     MinWait();
-    HP().modeChangeLocked = false ;
+    HP().modeChangeLocked = false;
 }
 
 
@@ -90,6 +97,7 @@ if (notCamera())
 
 {
     HP().hasEdited = true;
+    LoadSavedBotValues();
     DisableGameModeHud(HP());
     DisableHeroHud(HP());
     HP().modeChangeLocked = true ;
@@ -111,4 +119,13 @@ if (inNormal())
 if (hasSpawnedHP())
 {
     SmallMessage(HP(), <"Press <0> to enter Edit Mode", InputBindingString(Button.Interact)>);
+}
+
+
+rule: "Wrecking Ball Pile Driver Bug Fix Edit Mode"
+if (inEdit() || inCamera())
+if(AbilityCooldown(HP(), Button.Crouch ) == true)
+if(HeroOf(HP()) == Hero.WreckingBall)
+{
+  SetStatus(HP(), null, Status.Stunned, 0.016);
 }
