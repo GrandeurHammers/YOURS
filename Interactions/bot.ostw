@@ -1,6 +1,6 @@
-import "./Vars/Global.ostw";
-import "./Vars/Player.ostw";
-import "./Macros/hostPlayer.ostw";
+import "../Vars/Global.ostw";
+import "../Vars/Player.ostw";
+import "../Macros/hostPlayer.ostw";
 rule: "▒【Bot Placement Module (Adapted from TPEGO by Provoxin)】▒"
 {}
 void ForceSeletedBotPosition() "【 Subroutine 】▒▒  ForceSeletedBotPosition  ▒▒" {

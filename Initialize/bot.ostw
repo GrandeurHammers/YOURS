@@ -1,7 +1,5 @@
-import "../Vars/Player.ostw";
-import "../Vars/Global.ostw";
-import "../Macros/hostPlayer.ostw";
-import "../Macros/eventPlayer.ostw";
+import "../Vars/index.ostw";
+import "../Macros/index.ostw";
 
 define hoverColor(): CustomColor(235, 180, 68, 255);
 define selectedColor(): CustomColor(235, 163, 61, 255);

@@ -1,4 +1,3 @@
-import "../SelectionEntityClass.ostw";
 globalvar define botHeroes;
 globalvar define heroQueue;
 globalvar define aa_InteractionTextOptions;

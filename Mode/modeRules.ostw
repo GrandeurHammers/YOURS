@@ -1,6 +1,6 @@
-import "./Vars/Global.ostw";
-import "./Vars/Player.ostw";
-import "./Macros/hostPlayer.ostw";
+import "../Vars/Global.ostw";
+import "../Vars/Player.ostw";
+import "../Macros/hostPlayer.ostw";
 
 
 void abilitiesOff() "Abilities Off" {

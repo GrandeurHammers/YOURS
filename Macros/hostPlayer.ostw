@@ -1,6 +1,5 @@
 import "../Vars/Global.ostw";
 import "../Vars/Player.ostw";
-import "../SelectionEntityClass.ostw";
 define  HP() : HostPlayer();
 define isHP() : HP() == EventPlayer();
 ModeType HPMode() : HostPlayer().mode;

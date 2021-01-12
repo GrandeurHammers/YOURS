@@ -1,5 +1,3 @@
-import "../SelectionEntityClass.ostw";
-
 playervar define initialize;
 playervar define noclipPosition;
 playervar define placementDistance;
