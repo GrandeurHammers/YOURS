@@ -3,10 +3,10 @@ import "../Vars/Player.ostw";
 import "../Macros/hostPlayer.ostw";
 
 define remainingSlotCount() : 12 - CountOf(AllPlayers(Team.All));
-define canSeeCusorHudHP() : inEdit() && !HP().isInMenu;
+define canSeeCusorHudHP() : inEdit();
 define showHost() : canSeeCusorHudHP() ? HP() : [];
 define canSwap(Team team): NumberOfSlots(team) - CountOf(AllPlayers(team)) > 0;
-define showCreateText(): inEdit() && !HP().isInMenu && HP().hostHoverTarget[1] == false && HP().hostSelectedTarget == EmptyArray();
+define showCreateText(): inEdit() && HP().hostHoverTarget[1] == false && HP().hostSelectedTarget == EmptyArray();
 define botOppositeTeam(): OppositeTeamOf(TeamOf(HP().hostHoverTarget[1]));
 define topHudCreate() : HP().hostSelectedTarget == EmptyArray() && HP().hostHoverTarget == EmptyArray() && remainingSlotCount() > 0;
 define showCreate(): HP().hostSelectedTarget == EmptyArray() && HP().hostHoverTarget == EmptyArray();
@@ -92,6 +92,7 @@ if(EventPlayer() == HP())
     makeHPHud(HP(), " ", 6);
     makeHPHud(showIncreaseRange(), <"[<0>] Increase", InputBindingString(Button.Ability2)>, 7, btnHeld(Button.Ability2) ? Color.Orange : Color.White);
     makeHPHud(canSeeCusorHudHP() && showDragText(), <"<0> to Drag", InputBindingString(Button.SecondaryFire)>, 8, btnHeld(Button.SecondaryFire) ? Color.Orange : Color.White);
+    makeHPHud(canSeeCusorHudHP() && showCreateText(), <"[<0>] Move Faster", InputBindingString(Button.Ability1)>, 6, bothTeamsAreFull() ? Color.Gray : btnHeld(Button.PrimaryFire) ? Color.Orange : Color.White);
     makeHPHud(canSeeCusorHudHP() && showCreateText(), <"<0> Create Bot", InputBindingString(Button.PrimaryFire)>, 8, bothTeamsAreFull() ? Color.Gray : btnHeld(Button.PrimaryFire) ? Color.Orange : Color.White);
     makeHPHud(canSeeCusorHudHP() && showRange(), <"<Range <0> m>", HP().placementDistance >, 8, btnHeld(Button.PrimaryFire) ? Color.Orange : Color.White);
     makeHPHud(showDecreaseRange(), <"[<0>] Decrease", InputBindingString(Button.Ultimate)>, 9, btnHeld(Button.Ultimate) ? Color.Orange : Color.White);
