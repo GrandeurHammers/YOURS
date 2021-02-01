@@ -1,0 +1,105 @@
+import "./Classes/Index.ostw";
+enum GameStateType {
+    Init,
+    Waiting,
+    Loading,
+    Fighting,
+    Ending,
+    GameOver
+}
+enum RoundBoss {
+  Round0 = null,
+  Round1 = Hero.Junkrat,
+  Round2 = Hero.Doomfist,
+  Round3 = Hero.Orisa
+}
+
+enum ActionType {
+  Init,
+  NextRound,
+  PrevRound,
+  CooldownAbility1,
+  CooldownAbility2,
+  FacingDirection,
+  PlayerPosition
+
+}
+enum StateKeys {
+  Round = "round",
+  CooldownAbility1 = "cooldownAbility1",
+  CooldownAbility2 = "cooldownAbility2",
+  HostPositions = "hostPositions",
+  HostFacingDirections = "hostFacingDirections",
+  Player = 'player'
+}
+
+
+
+// class UpdatableAction : ActionBase {
+//   public virtual void SetValue(define key, define newValue) {
+//     if(ArrayContains(Values, key)) {
+//       Values[] = newValue
+//     }
+//   }
+// }
+
+ActionBase createAction(ActionType type, ActionValue[] values = []): new ActionBase(type, values);
+ActionValue[] initialState(): [createValue(StateKeys.Round, 0), createValue(StateKeys.CooldownAbility1, 4), createValue(StateKeys.CooldownAbility2, 4), createValue(StateKeys.HostPositions, []), createValue(StateKeys.HostFacingDirections, [])];
+ActionValue createValue(StateKeys key, define value): new ActionValue(key, value);
+class GameStateReducer : ReducerBase {
+  protected virtual void SetAbility(ActionBase action, StateBase currentState, Button button) {
+      define player = action.Values[1];
+      currentState.Update([action.Values[0]]);
+      if(AbilityCooldown(player, button) > 0 && AbilityCooldown(player, button) > currentState.GetValue(action.Values[0].Key)) {
+        SetAbilityCooldown(player, currentState.GetValue(action.Values[0].Key));
+      }
+      action.Values[1].Destroy();
+      action.Destroy();
+  }
+  protected override StateBase Resolve(ActionBase action, StateBase currentState) {
+    if(action.Type == ActionType.NextRound){
+      currentState.Update([root.createValue(StateKeys.Round, currentState.GetValue(StateKeys.Round) + 1)]);
+    }
+    else if(action.Type == ActionType.PrevRound){
+      currentState.Update([root.createValue(StateKeys.Round, Max(0, currentState.GetValue(StateKeys.Round) - 1))]);
+    }
+    else if(action.Type == ActionType.CooldownAbility1){
+      SetAbility(action, currentState, Button.Ability1);
+    }
+    else if(action.Type == ActionType.CooldownAbility2){
+      SetAbility(action, currentState, Button.Ability2);
+    }
+    else if(action.Type == ActionType.FacingDirection){
+      action.Values[0].UpdateValue(Append(currentState.GetValue(StateKeys.HostFacingDirections), action.Values[0].Value));
+      currentState.Update(action.Values);
+    }
+    else if(action.Type == ActionType.PlayerPosition){
+      action.Values[0].UpdateValue(Append(currentState.GetValue(StateKeys.HostPositions), action.Values[0].Value));
+      currentState.Update(action.Values);
+    }
+    else {currentState.Update(action.Values);}
+    action.Destroy();
+    return currentState;
+  }
+}
+globalvar Store GameState = new Store(new StateBase(initialState()), new GameStateReducer());
+
+ActionValue makePostionAction() { return createAction(ActionType.PlayerPosition, [createValue(StateKeys.HostPositions, PositionOf(HostPlayer()))]);}
+rule: 'HostPositions'
+Event.OngoingPlayer
+{
+  CreateHudText(HostPlayer(), <"Server Load <0>%", ServerLoad()>);
+  CreateHudText(HostPlayer(), <"HostPositions <0>", LastOf(GameState.GetValue(StateKeys.HostPositions))>);
+  CreateHudText(HostPlayer(), <"CountOf HostPositions <0>", CountOf(GameState.GetValue(StateKeys.HostPositions))>);
+}
+rule: 'HostPositions'
+Event.OngoingPlayer
+if(EventPlayer() == HostPlayer())
+if(HasSpawned())
+if(IsAlive())
+if(LastOf(GameState.GetValue(StateKeys.HostPositions)) != PositionOf())
+{
+  GameState.Dispatch(makePostionAction());
+  MinWait();
+  LoopIfConditionIsTrue();
+}

@@ -1,0 +1,4 @@
+import "./Classes/index.ostw";
+
+ActionValue createValue(Any key, Any value): new ActionValue(key, value);
+ActionBase createAction(Any type, in ActionValue[] values = []): new ActionBase(type, values);

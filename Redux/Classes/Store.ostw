@@ -1,0 +1,19 @@
+import "index.ostw";
+
+class Store {
+  public StateBase CurrentState;
+  public ReducerBase Reducer;
+  public virtual void Dispatch(in ActionBase action) {
+    Reducer.Call(action, CurrentState);
+  }
+  public virtual StateBase GetState() {
+    return CurrentState.GetState();
+  }
+  public virtual ActionValue GetValue(Any key) {
+    return CurrentState.GetValue(key);
+  }
+  public Store(in StateBase initialState = new StateBase(), in ReducerBase reducer = new ReducerBase()) {
+   CurrentState = initialState;
+   Reducer = reducer;
+  }
+}

@@ -1,0 +1,13 @@
+import "State.ostw";
+import "Action.ostw";
+class ReducerBase {
+  protected virtual StateBase Resolve(ActionBase action, StateBase currentState) {
+    // put dispatch cases here it's up to you to update the state
+    return currentState.Update(action.Values);
+  }
+  public void Call(ActionBase action, in StateBase currentState) {
+    Resolve(action, currentState);
+  }
+}
+
+

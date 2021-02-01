@@ -1,0 +1,15 @@
+import "ActionValue.ostw";
+class ActionBase {
+  public Any Type;
+  public ActionValue[] Values = [];
+  public virtual void Destroy() {
+    delete(this);
+  }
+  public ActionBase(in Any type, in ActionValue[] values = []) {
+    Type = type;
+    Values = values;
+  }
+}
+
+
+

@@ -1,0 +1,47 @@
+import "ActionValue.ostw";
+
+
+
+class StateBase
+{
+  protected Any[] Keys = [];
+  protected ActionValue[] CurrentState = [];
+  public StateBase(ActionValue[] initialState = []) {
+    if(initialState == true && initialState != []) {
+      UpdateState(initialState);
+    }    
+  }
+  protected void UpdateKeys(Any key) {
+    if(ArrayContains(Keys, key) == false) {
+      ModifyVariable(Keys, Operation.AppendToArray, key);
+    }
+  }
+
+  protected void UpdateState(ActionValue[] values) "Update History" {
+    if(values == true && values != []) {
+      for (Number i = 0; i < CountOf(values); i++)
+      {
+        UpdateKeys(values[i].Key);
+        define keyIndex = GetKeyIndex(values[i].Key);
+        if(CurrentState[keyIndex] == true) { 
+          CurrentState[keyIndex].UpdateValue(values[i].Value);
+          values[i].Destroy();
+        } else {
+          CurrentState[keyIndex] = new ActionValue(values[i].Key, values[i].Value);
+          values[i].Destroy();
+        }
+      }
+    }
+  }
+  public virtual ActionValue[] Update(ActionValue[] values) "Update State" {
+    UpdateState(values);
+    return CurrentState;
+  }
+  public ActionValue[] GetState() {return CurrentState;}
+  public Any[] GetKeys() {return Keys;}
+  public Any GetValue(Any key) { return CurrentState[GetKeyIndex(key)].Value;}
+  public Number GetKeyIndex(define key) {
+    return IndexOfArrayValue(Keys, key);
+  }
+}
+

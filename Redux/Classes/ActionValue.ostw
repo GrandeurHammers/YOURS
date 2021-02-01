@@ -1,0 +1,14 @@
+class ActionValue {
+ public Any Key;
+ public Any Value;
+ public virtual void UpdateValue(Any value) {
+   Value = value;
+ }
+ public virtual void Destroy() {
+   delete(this);
+ }
+ public ActionValue(Any key, Any value) {
+   Key = key;
+   Value = value;
+ }
+}
