@@ -1,0 +1,42 @@
+import "WorkshopSettings.ostw";
+globalvar Color[] ColorMap;
+Color[] colorsArray:
+[
+  Color.White,
+  Color.Yellow,
+  Color.Green,
+  Color.Purple,
+  Color.Red,
+  Color.Blue,
+  Color.Aqua,
+  Color.Orange,
+  Color.SkyBlue,
+  Color.Turquoise,
+  Color.LimeGreen,
+  Color.Black,
+  Color.Rose,
+  Color.Violet,
+  Color.Gray
+];
+String[] colorStrings: [
+  "White",
+  "Yellow",
+  "Green",
+  "Purple",
+  "Red",
+  "Blue",
+  "Aqua",
+  "Orange",
+  "SkyBlue",
+  "Turquoise",
+  "LimeGreen",
+  "Black",
+  "Rose",
+  "Violet",
+  "Gray"
+];
+
+Color currentColor(in Boolean selected, in Boolean hovered):
+  selected == true ? root.ColorMap[root.InteractionSettings[SettingKeys.SelectedColor]] :
+  hovered ? root.ColorMap[root.InteractionSettings[SettingKeys.HoverColor]] :
+  root.ColorMap[root.InteractionSettings[SettingKeys.BaseColor]];

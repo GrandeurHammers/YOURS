@@ -1,0 +1,70 @@
+import "ColorVars.ostw";
+globalvar Any[] InteractionSettings = [];
+
+enum SettingCategories {
+  Interactions = "Interactions",
+  Preferences = "Preferences"
+}
+enum SettingNames {
+  BaseColor = "Default Color",
+  HoverColor = "onHover Color",
+  SelectedColor = "onSelected Color"
+}
+enum SettingKeys {
+  BaseColor,
+  HoverColor,
+  SelectedColor
+}
+Any makeWSCombo(
+  SettingCategories category,
+  SettingNames name,
+  Number defaultIndex = 0,
+  Any[] options,
+  Number sortOrder = 0
+  ) : WorkshopSettingCombo(<String>category, <String>name, defaultIndex, options, sortOrder);
+
+Any makeWSInt(
+  SettingCategories category,
+  SettingNames name,
+  Number defaultIndex = 0,
+  Number min = 0,
+  Number max = 100,
+  Number sortOrder = 0
+) : WorkshopSettingInteger(<String>category, <String>name, defaultIndex, min, max, sortOrder);
+
+
+Any makeWSReal(
+  SettingCategories category,
+  SettingNames name,
+  Number defaultIndex = 0,
+  Number min = 0,
+  Number max = 100,
+  Number sortOrder = 0
+) : WorkshopSettingReal(<String>category, <String>name, defaultIndex, min, max, sortOrder);
+
+
+
+rule: 'Init Preferences Settings'
+{
+  ColorMap =
+ [
+   Color.White,
+   Color.Yellow,
+   Color.Green,
+   Color.Purple,
+   Color.Red,
+   Color.Blue,
+   Color.Aqua,
+   Color.Orange,
+   Color.SkyBlue,
+   Color.Turquoise,
+   Color.LimeGreen,
+   Color.Black,
+   Color.Rose,
+   Color.Violet,
+   Color.Gray
+  ];
+  InteractionSettings[0] = makeWSCombo(SettingCategories.Preferences, SettingNames.BaseColor, 0, colorStrings, 0); 
+  InteractionSettings[1] = makeWSCombo(SettingCategories.Preferences, SettingNames.HoverColor, 7, colorStrings, 1);
+  InteractionSettings[2] = makeWSCombo(SettingCategories.Preferences, SettingNames.SelectedColor, 2, colorStrings, 1);
+}

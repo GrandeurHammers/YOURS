@@ -1,0 +1,14 @@
+class PlayerData {
+  public Player ID;
+  public Number Slot;
+  public Team Team;
+  public Hero Hero;
+  public Number TimeOfSpawn;
+  public Number TimeOfDeath;
+  public Vector ForcedPosition;
+  public Vector LookPosition;
+  public PlayerData(in Number slot, in Team team) {
+    Slot = slot;
+    Team = team;
+  }
+}

@@ -1,0 +1,19 @@
+class ForceFacing {
+  public virtual void Start(in Player ID, in Vector lookPosition) {
+    StartFacing(
+      ID,
+      UpdateEveryFrame(
+        DirectionTowards(
+          EyePosition(ID),
+          lookPosition
+        )
+      ),
+      720,
+      Relative.ToWorld,
+      FacingRev.DirectionAndTurnRate
+    );
+  }
+  public virtual void Stop(in Player ID) {
+    StopFacing(ID);
+  }
+}

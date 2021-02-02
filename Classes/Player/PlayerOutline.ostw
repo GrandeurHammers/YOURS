@@ -1,0 +1,8 @@
+class PlayerOutline {
+  public virtual void Start(in Player ID, in Color color = Color.Black){
+    StartForcingPlayerOutlines(ID, HostPlayer(), true, color, OutlineType.Always);
+  }
+  public virtual void Stop(in Player ID){
+    StopForcingPlayerOutlines(ID, HostPlayer());
+  }
+}

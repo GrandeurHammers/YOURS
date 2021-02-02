@@ -1,0 +1,39 @@
+import "Player/index.ostw";
+
+enum ModeType {
+    Init,
+    Normal,
+    Edit,
+    Camera
+}
+enum OptionType {
+    Init,
+    Normal,
+    Edit,
+    Camera
+}
+Vector centerOfHero(Player ID): EyePosition(ID) + PositionOf(ID) / 2;
+class SelectionOption {
+  private Boolean IsEffect;
+  private Number SourceIndex;
+  Vector centerOfHero(Player ID): EyePosition(ID) + PositionOf(ID) / 2;
+  public SelectionOption(in Number sourceIndex, in Boolean isEffect) {
+      SourceIndex= sourceIndex;
+      IsEffect = isEffect;
+  }
+  public virtual Vector Value() {
+  return
+      IsEffect ? root.PlayerEntities[SourceIndex].LookPosition :
+      centerOfHero(root.PlayerEntities[SourceIndex].ID);
+  }
+
+ }
+
+globalvar ModeType mode;
+
+globalvar Any hoverTargetIndex = -1;
+globalvar Any selectedIndex = -1;
+
+globalvar SelectionOption[] selectionOptions;
+
+

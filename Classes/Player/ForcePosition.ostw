@@ -1,0 +1,9 @@
+class ForcePosition {
+  public ForcePosition(){}
+  public virtual void Start(in Player ID, in Vector forcedPosition) {
+    StartForcingPlayerPosition(ID, forcedPosition, true);
+  }
+  public virtual void  Stop(in Player ID) {
+    StopForcingPlayerPosition(ID);
+  }
+}

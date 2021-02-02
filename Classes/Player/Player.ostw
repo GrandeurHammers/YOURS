@@ -1,0 +1,272 @@
+globalvar Any[] InteractionSettings = [];
+globalvar Color[] ColorMap;
+
+
+enum SettingCategories {
+  Interactions = "Interactions",
+  Preferences = "Preferences"
+}
+enum SettingNames {
+  BaseColor = "Default Color",
+  HoverColor = "onHover Color",
+  SelectedColor = "onSelected Color"
+}
+String toString(Any value): <"<0>", value>;
+
+Color[] colorsArray:
+[
+  Color.White,
+  Color.Yellow,
+  Color.Green,
+  Color.Purple,
+  Color.Red,
+  Color.Blue,
+  Color.Aqua,
+  Color.Orange,
+  Color.SkyBlue,
+  Color.Turquoise,
+  Color.LimeGreen,
+  Color.Black,
+  Color.Rose,
+  Color.Violet,
+  Color.Gray
+];
+String[] colorStrings: [
+  "White",
+  "Yellow",
+  "Green",
+  "Purple",
+  "Red",
+  "Blue",
+  "Aqua",
+  "Orange",
+  "SkyBlue",
+  "Turquoise",
+  "LimeGreen",
+  "Black",
+  "Rose",
+  "Violet",
+  "Gray"
+];
+
+enum SettingKeys {
+  BaseColor,
+  HoverColor,
+  SelectedColor
+}
+Any makeCombo(
+  SettingCategories category,
+  SettingNames name,
+  Number defaultIndex = 0,
+  Any[] options,
+  Number sortOrder = 0
+  ) : WorkshopSettingCombo(<String>category, <String>name, defaultIndex, options, sortOrder) ;
+rule: 'Init Preferences Settings'
+{
+  ColorMap =
+ [
+   Color.White,
+   Color.Yellow,
+   Color.Green,
+   Color.Purple,
+   Color.Red,
+   Color.Blue,
+   Color.Aqua,
+   Color.Orange,
+   Color.SkyBlue,
+   Color.Turquoise,
+   Color.LimeGreen,
+   Color.Black,
+   Color.Rose,
+   Color.Violet,
+   Color.Gray
+  ];
+  InteractionSettings[0] = makeCombo(SettingCategories.Preferences, SettingNames.BaseColor, 0, colorStrings, 0); 
+  InteractionSettings[1] = makeCombo(SettingCategories.Preferences, SettingNames.HoverColor, 7, colorStrings, 1);
+  InteractionSettings[2] = makeCombo(SettingCategories.Preferences, SettingNames.SelectedColor, 2, colorStrings, 1);
+}
+
+// SettingsCredits[1] = WorkshopSettingCombo("Credits","Based on \"Bot Placement Tool\" By", 0,["Provoxin", "workshop.codes/u/Provoxin", "Bot Placement Tool (TPEGO)"], 0);
+
+class PlayerDataBase {
+  public Player ID;
+  public Number Slot;
+  public Team Team;
+  public Hero Hero;
+  public Number TimeOfSpawn;
+  public Number TimeOfDeath;
+}
+
+class ForcePosition {
+  public Vector ForcedPosition;
+  public virtual SetPosition(in Vector forcedPosition) {
+    ForcedPosition = forcedPosition;
+  }
+  public virtual Start(in Player ID) {
+    StartForcingPlayerPosition(ID, ForcedPosition, true);
+  }
+  public virtual Stop(in Player ID) {
+    StopForcingPlayerPosition(ID);
+  }
+  public ForcePositionBase(in Vector forcedPosition) {
+    ForcedPosition = forcedPosition;
+  }
+}
+
+
+class ForceFacingBase {
+  public Vector LookPosition;
+  public ForceFacingBase(in Vector lookPosition) {
+    LookPosition = lookPosition;
+  }
+  public virtual Start(in Player ID) {
+    StartFacing(
+      ID,
+      UpdateEveryFrame(
+        DirectionTowards(
+          EyePosition(ID),
+          LookPosition
+        )
+      ),
+      720,
+      Relative.ToWorld,
+      FacingRev.DirectionAndTurnRate
+    );
+  }
+  public virtual StopFacing(in Player ID) {
+    StopFacing(ID);
+  }
+
+}
+
+class PlayerOutline {
+
+}
+
+class LookEffect {
+  public Any LookOrbId;
+  public Any LookBeamId;
+  public Boolean Visible;
+  public Boolean Selected;
+  public Boolean Hovered;
+      
+  protected virtual void CreateSphere(in Vector lookPosition) {
+    LookOrbId = CreateEffect(
+        VisibleTo: Visible == true ? HostPlayer() : [],
+        Type: Effect.Sphere,
+        Color: Selected == true ?
+         root.ColorMap[root.InteractionSettings[SettingKeys.SelectedColor]] :
+         Hovered ?
+         root.ColorMap[root.InteractionSettings[SettingKeys.HoverColor]] :
+         root.ColorMap[root.InteractionSettings[SettingKeys.BaseColor]],
+        Position: lookPosition,
+        Radius: Selected == true ? 0.150 : Hovered == true ? 0.200 : 0.100,
+        Reevaluation: EffectRev.VisibleToPositionRadiusAndColor
+    );
+  }
+  protected virtual void CreateBeam(in Player ID, Vector lookPosition) {
+    LookBeamId =
+    CreateBeamEffect(
+      Visible == true ? HostPlayer() : [],
+      BeamType.GrappleBeam,
+      UpdateEveryFrame(EyePosition(ID) + Vector(0,0.10,0)),
+      UpdateEveryFrame(lookPosition),
+      Color.White,
+      EffectRev.VisibleToPositionAndRadius
+    );
+  }
+  protected virtual void Create(in Player ID, Vector lookPosition) {
+    if(EntityExists(LookOrbId) == true) {
+      DestroyEffect(LookOrbId);
+    }
+    if(EntityExists(LookBeamId) == true) {
+      DestroyEffect(LookBeamId);
+    }
+    CreateSphere(lookPosition);
+    CreateBeam(ID, lookPosition);
+  }
+  protected virtual void Destroy() {
+    DestroyEffect(LookOrbId);
+    DestroyEffect(LookBeamId);
+    LookOrbId = null;
+    LookBeamId = null;
+  }
+  protected virtual void Show(){
+    Visible = true;
+  }
+  protected virtual void Hide(){
+    Visible = false;
+  }
+}
+
+class PlayerEntity {
+  // ▒PlayerDataBase▒
+  public Player ID;
+  public Number Slot;
+  public Team Team;
+  public Hero Hero;
+  public Number TimeOfSpawn;
+  public Number TimeOfDeath;
+  // ▒▒ForceFacingBase▒▒
+  public Vector LookPosition;
+  public Vector ForcedPosition;
+  public Any LookOrbId;
+  public Any LookBeamId;
+  public Boolean Visible;
+  public Boolean Selected;
+  public Boolean Hovered;
+
+  public LookEffect LookEffect;
+
+  public virtual void CreateBot() {
+    ID = CreateDummyBot(
+      Hero,
+      Team,
+      Slot,
+      ForcedPosition,
+      DirectionTowards(ForcedPosition, LookPosition)
+    );
+  }
+  public virtual void DestroyBot() {
+    DestroyDummyBot(Team, Slot);
+  }
+  public virtual void SetPosition(in Vector forcedPosition) {
+    ForcedPosition = forcedPosition;
+  }
+  public virtual void StartForcingPosition() {
+    StartForcingPlayerPosition(ID, ForcedPosition, true);
+  }
+  public virtual void StopForcingPosition() {
+    StopForcingPlayerPosition(ID);
+  }
+  public virtual void SetLook(in Vector lookPosition) {
+    LookPosition = lookPosition;
+  }
+  public virtual void StartFacing() {
+    StartFacing(
+      ID,
+      UpdateEveryFrame(
+        DirectionTowards(
+          EyePosition(ID),
+          LookPosition
+        )
+      ),
+      720,
+      Relative.ToWorld,
+      FacingRev.DirectionAndTurnRate
+    );
+  }
+  public virtual void StopFacing() {
+    StopFacing(ID);
+  }
+  public virtual void Respawn() {
+    Respawn(ID);
+  }
+    public virtual void OnDeath() {
+    Respawn(ID);
+  }
+  public PlayerEntity(in Number slot, in Team team) {
+    Slot = slot;
+    Team = team;
+  }
+}

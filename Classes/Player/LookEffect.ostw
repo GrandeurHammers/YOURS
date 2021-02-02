@@ -1,0 +1,44 @@
+import "../ColorVars.ostw";
+class LookEffect {
+  public LookEffect(){}
+  public Any LookOrbId;
+  public Any LookBeamId;
+        
+  protected virtual void CreateSphere(in Vector lookPosition, in Boolean selected, in Boolean hovered, in Boolean visible) {
+    LookOrbId = CreateEffect(
+        VisibleTo: visible == true ? HostPlayer() : [],
+        Type: Effect.Sphere,
+        Color: root.currentColor(selected, hovered),
+        Position: lookPosition,
+        Radius: selected == true ? 0.150 : hovered == true ? 0.200 : 0.100,
+        Reevaluation: EffectRev.VisibleToPositionRadiusAndColor
+    );
+  }
+  protected virtual void CreateBeam(in Player ID, in Vector lookPosition, in Boolean visible) {
+    LookBeamId =
+    CreateBeamEffect(
+      visible == true ? HostPlayer() : [],
+      BeamType.GrappleBeam,
+      UpdateEveryFrame(EyePosition(ID) + Vector(0,0.10,0)),
+      UpdateEveryFrame(lookPosition),
+      Color.White,
+      EffectRev.VisibleToPositionAndRadius
+    );
+  }
+  public virtual void Create(in Player ID, in Vector lookPosition, in Boolean selected, in Boolean hovered, in Boolean visible) {
+    if(EntityExists(LookOrbId) == true) {
+      DestroyEffect(LookOrbId);
+    }
+    if(EntityExists(LookBeamId) == true) {
+      DestroyEffect(LookBeamId);
+    }
+    CreateSphere(lookPosition, selected, hovered, visible);
+    CreateBeam(ID, lookPosition, visible);
+  }
+  public virtual void Destroy() {
+    DestroyEffect(LookOrbId);
+    DestroyEffect(LookBeamId);
+    LookOrbId = null;
+    LookBeamId = null;
+  }
+}

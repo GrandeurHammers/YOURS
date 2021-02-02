@@ -1,0 +1,154 @@
+import "PlayerData.ostw";
+import "ForceFacing.ostw";
+import "ForcePosition.ostw";
+import "LookEffect.ostw";
+import "PlayerOutline.ostw";
+import "../ColorVars.ostw";
+import "../GameStateVars.ostw";
+enum EntityActionsType {
+  Init,
+  ForceFacing,
+  ForcePosition,
+  LookEffect,
+  PlayerOutline
+}
+enum StartType {
+  ForceFacing,
+  ForcePosition,
+  ForceOutline
+}
+enum StopType {
+  ForceFacing,
+  ForcePosition,
+  ForceOutline
+}
+enum CreateType {
+  LookEffect,
+  Bot
+}
+
+enum DestroyType {
+  LookEffect,
+  Bot
+}
+
+class ForceFacingWrapper {
+  protected ForceFacing ForceFacing;
+
+}
+class PlayerEntity: PlayerData {
+  public Number Index;
+  private ForceFacing ForceFacing;
+  protected ForcePosition ForcePosition;
+  protected LookEffect LookEffect;
+  protected PlayerOutline ForceOutline;
+  protected virtual void CreateBot() {
+    ID = CreateDummyBot(
+      Hero,
+      Team,
+      Slot,
+      ForcedPosition,
+      DirectionTowards(ForcedPosition, LookPosition)
+    );
+  }
+  protected virtual void DestroyBot() {
+    DestroyDummyBot(Team, Slot);
+  }
+  public virtual void Start(StartType type) {
+    if(type == StartType.ForceFacing) {
+      ForceFacing.Start(ID, LookPosition);
+    }
+    else if(type == StartType.ForcePosition) {
+      ForcePosition.Start(ID, ForcedPosition);
+    }
+    else if(type == StartType.ForceOutline) {
+      ForceOutline.Start(ID, root.currentColor(root.selectedIndex == Index, root.hoverTargetIndex == Index));
+    }
+  }
+  public virtual void Stop(StopType type) {
+    if(type == StopType.ForceFacing) {
+      ForceFacing.Stop(ID);
+    } else if(type == StopType.ForcePosition) {
+      ForcePosition.Stop(ID);
+    } else if(type == StopType.ForceOutline) {
+      ForceOutline.Stop(ID);
+    }
+  }
+  public virtual void Create(CreateType type) {
+    if(type == CreateType.LookEffect) {
+      LookEffect.Create(ID, LookPosition, root.selectedIndex == Index, root.hoverTargetIndex == Index, root.mode == ModeType.Edit && EntityExists(ID));
+    } else if(type == CreateType.Bot) {
+      CreateBot();
+    }
+  }
+  public virtual void Destroy(DestroyType type) {
+    if(type == DestroyType.LookEffect) {
+      LookEffect.Destroy();
+    } else if(type == DestroyType.Bot) {
+      DestroyBot();
+    }
+  }
+  public PlayerEntity(in Number index, in Number slot, in Team team) {
+    Index = index;
+    Slot = slot;
+    Team = team;
+    ForceFacing = new ForceFacing();
+    ForcePosition = new ForcePosition();
+    LookEffect = new LookEffect();
+    ForceOutline = new PlayerOutline();
+    Create(CreateType.LookEffect);
+  }
+
+}
+
+
+globalvar PlayerEntity[] PlayerEntities = [];
+globalvar Boolean isFFA ;
+
+rule: 'SetUp PlayerEntities'
+{
+  PlayerEntities = [];
+  if(NumberOfSlots(Team.Team1) == 0 && NumberOfSlots(Team.Team2) == 0 && NumberOfSlots(Team.All) > 0) {
+    isFFA = true;
+    for (define i = 0; i < NumberOfSlots(Team.All); i++)
+    {
+        ModifyVariable(PlayerEntities, Operation.AppendToArray, new PlayerEntity(i, i, Team.All));
+    }
+  } else {
+      for (define i = 0; i < NumberOfSlots(Team.Team1) + NumberOfSlots(Team.Team2); i++) {
+        if(i < NumberOfSlots(Team.Team1)) {
+          ModifyVariable(PlayerEntities, Operation.AppendToArray, new PlayerEntity(i, i, Team.Team1));
+        } else {
+          ModifyVariable(PlayerEntities, Operation.AppendToArray, new PlayerEntity(i, i - NumberOfSlots(Team.Team1), Team.Team2));
+        }
+        
+      }
+  }
+  
+}
+playervar Boolean init;
+playervar Number PlayerEntityIndex;
+PlayerEntity TargetEntity(): PlayerEntities[EventPlayer().PlayerEntityIndex];
+rule: 'Register Player'
+Event.OngoingPlayer
+if(EventPlayer().init == false)
+if(HasSpawned() == true)
+if(IsAlive() == true)
+{
+  PlayerEntityIndex = TeamOf() == Team.Team2 ? SlotOf() + NumberOfSlots(Team.Team1): SlotOf();
+  
+  TargetEntity().ID = EventPlayer();
+  TargetEntity().Hero = HeroOf();
+  TargetEntity().TimeOfSpawn = TotalTimeElapsed();
+  
+  if(mode == ModeType.Edit || mode == ModeType.Camera) {
+    TargetEntity().Start(StartType.ForceOutline);
+    if(TargetEntity().ForcedPosition == true) {
+      TargetEntity().Start(StartType.ForcePosition);
+    }
+    if(TargetEntity().LookPosition == true) {
+      TargetEntity().Start(StartType.ForceFacing);
+    }
+  }
+  init = true;
+}
