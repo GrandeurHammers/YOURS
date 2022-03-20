@@ -43,7 +43,7 @@ if(HP().hostHoverTarget == EmptyArray())
         HP().nextBotHero = FilteredArray(RandomValueInArray(AllHeroes()), ArrayElement() != HP().nextBotHero);
     }
     else {
-       SmallMessage(HP(), !isFFA ? <"Both Teams Are Full!", HP().fullTeam, HP().nextBotTeam> : "Game Is Full!");
+       SmallMessage(HP(), !isFFA ? "Both Teams Are Full!" : "Game Is Full!");
     }
     updateSelectionArray();
     WaitUntil(btnHeld(Button.PrimaryFire) == false, 1);

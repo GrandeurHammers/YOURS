@@ -88,7 +88,7 @@ if (inNormal() || inInitMode())
 }
 
 
-define ModeCameraHP() : StartCamera(HP(), UpdateEveryFrame(cameraEyePosition()), UpdateEveryFrame(cameraLookPosition()), 128);
+void ModeCameraHP() { StartCamera(HP(), UpdateEveryFrame(cameraEyePosition()), UpdateEveryFrame(cameraLookPosition()), 128); }
 rule: "Enter Camera Mode"
 if(HP().modeChangeLocked == false)
 if(btnHeld(Button.Ability1))

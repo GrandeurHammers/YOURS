@@ -7,11 +7,11 @@ playervar define CursorPosition;
 
 playervar ModeType mode;
 
-playervar define grabbedBot;
+playervar Player grabbedBot;
 playervar Team nextBotTeam;
 playervar Role nextBotRole;
 playervar Hero nextBotHero;
-playervar define botLookPosition;
+playervar Vector botLookPosition;
 playervar Team fullTeam;
 playervar Vector hostCursor;
 playervar define selectionArray;

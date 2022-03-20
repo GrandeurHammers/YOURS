@@ -1,11 +1,11 @@
-globalvar define botHeroes;
-globalvar define heroQueue;
+globalvar Hero[] botHeroes;
+globalvar Hero[] heroQueue;
 globalvar define aa_InteractionTextOptions;
 globalvar define aa_InteractionDefaultBindings;
 globalvar define BotsLockedMove;
 globalvar define TeamSizes;
-globalvar define NumberOfOpenSlots;
-globalvar define numberOfSlotsTotal;
+globalvar Number NumberOfOpenSlots;
+globalvar Number numberOfSlotsTotal;
 globalvar define i;
 globalvar define GlobalInitialize;
 globalvar define ValueCommunications;

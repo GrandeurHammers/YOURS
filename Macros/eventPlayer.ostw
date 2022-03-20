@@ -1,18 +1,18 @@
-define EP(): EventPlayer();
+Player EP(): EventPlayer();
 
-define isButtonHeld_EP(Button button) : IsButtonHeld(EventPlayer(),button);
-define jumpOrCrouchHeld_EP(): isButtonHeld_EP(Button.Crouch) || isButtonHeld_EP(Button.Jump);
-define throttleOf_EP() : ThrottleOf(EventPlayer());
+Boolean isButtonHeld_EP(Button button) : IsButtonHeld(EventPlayer(),button);
+Boolean jumpOrCrouchHeld_EP(): isButtonHeld_EP(Button.Crouch) || isButtonHeld_EP(Button.Jump);
+Vector throttleOf_EP() : ThrottleOf(EventPlayer());
 // define throttleOfIsGreater_EP(define number) : ThrottleOf(EventPlayer());
 
-define velocityOf_EP() : VelocityOf(EventPlayer());
-define speedOf_EP() : SpeedOf(EventPlayer());
+Vector velocityOf_EP() : VelocityOf(EventPlayer());
+Number speedOf_EP() : SpeedOf(EventPlayer());
 
-define speedOfIsGreater_EP(define number) : speedOf_EP() > number;
+Boolean speedOfIsGreater_EP(Number number) : speedOf_EP() > number;
 
-define slotOfEP() : SlotOf(EventPlayer());
-define eyePositionEP(): EyePosition(EP());
+Number slotOfEP() : SlotOf(EventPlayer());
+Vector eyePositionEP(): EyePosition(EP());
 
-define directionTowardsEP(define end): DirectionTowards(eyePositionEP(), end);
+Vector directionTowardsEP(define end): DirectionTowards(eyePositionEP(), end);
 
 

@@ -1,18 +1,18 @@
 import "../Vars/index.ostw";
 import "../Macros/index.ostw";
 
-define hoverColor(): CustomColor(235, 180, 68, 255);
-define selectedColor(): CustomColor(235, 163, 61, 255);
-define initBotLookPosition(): RayCastHitPosition(eyePositionEP(), eyePositionEP() + directionTowardsEP(HP()) * 5);
-define aimVisibleTo(): inEdit() ? HP() : [];
-define lookOrbIsHovered(): inEdit() && HP().hostHoverTarget[2] == EntityType.LookOrb &&  HP().hostHoverTarget[1] == EP();
-define lookOrbIsSelected(): inEdit() && HP().hostSelectedTarget[2] == EntityType.LookOrb &&  HP().hostSelectedTarget[1] == EP();
-define lookOrbColor(): lookOrbIsSelected() == true ? Color.Green : lookOrbIsHovered() == true ? Color.Orange : Color.White;
-define lookOrbRadius(): lookOrbIsSelected() ? .150 : lookOrbIsHovered() == true ? .200 : .100;
-define lookOrbPosition(): lookOrbIsSelected() ?
+Color hoverColor(): CustomColor(235, 180, 68, 255);
+Color selectedColor(): CustomColor(235, 163, 61, 255);
+Vector initBotLookPosition(): RayCastHitPosition(eyePositionEP(), eyePositionEP() + directionTowardsEP(HP()) * 5);
+Player[] aimVisibleTo(): inEdit() ? HP() : [];
+Boolean lookOrbIsHovered(): inEdit() && HP().hostHoverTarget[2] == EntityType.LookOrb &&  HP().hostHoverTarget[1] == EP();
+Boolean lookOrbIsSelected(): inEdit() && HP().hostSelectedTarget[2] == EntityType.LookOrb &&  HP().hostSelectedTarget[1] == EP();
+Color lookOrbColor(): lookOrbIsSelected() == true ? Color.Green : lookOrbIsHovered() == true ? Color.Orange : Color.White;
+Number lookOrbRadius(): lookOrbIsSelected() ? .150 : lookOrbIsHovered() == true ? .200 : .100;
+Vector lookOrbPosition(): lookOrbIsSelected() ?
 placementPositionHP() : EP().botLookPosition;
 
-define lookOrbPositionUEF(): UpdateEveryFrame( lookOrbIsSelected() ?
+Vector lookOrbPositionUEF(): UpdateEveryFrame( lookOrbIsSelected() ?
 placementPositionHPRaw() : EP().botLookPosition);
 
 
