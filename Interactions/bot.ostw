@@ -37,7 +37,7 @@ if(HP().hostHoverTarget == EmptyArray())
                 -1,
                 placementPositionHP()
                 , DirectionTowards(placementPositionHP(), eyePositionHP()));
-        
+
         HP().targetedDummy = LastCreatedEntity();
         WaitUntil(HP().targetedDummy.initialize == true, 3);
         HP().nextBotHero = FilteredArray(RandomValueInArray(AllHeroes()), ArrayElement() != HP().nextBotHero);
@@ -83,7 +83,7 @@ if(btnHeld(Button.SecondaryFire) == true )
     MinWait();
     updateSelectionArray();
 
-    
+
 }
 // define rateOfChange():  AbsoluteValue(VerticalFacingAngleOf(HP()) * 2 / 120);
 rule: "Update Range"
@@ -116,7 +116,7 @@ if(HP().hostSelectedTarget != EmptyArray())
     if(HP().hostSelectedTarget[2] == EntityType.DummyBot) {
       HP().hostSelectedTarget[1].botForcedPosition = placementPositionHP();
       DropSeletedBot();
-      HP().hostSelectedTarget[1].botLookPosition = EyePosition(HP().hostSelectedTarget[1]) + DirectionTowards(EyePosition(HP().hostSelectedTarget[1]), HP().hostSelectedTarget[1].botLookPosition) * 3; 
+      HP().hostSelectedTarget[1].botLookPosition = EyePosition(HP().hostSelectedTarget[1]) + DirectionTowards(EyePosition(HP().hostSelectedTarget[1]), HP().hostSelectedTarget[1].botLookPosition) * 3;
     } else {
         HP().hostSelectedTarget[1].botLookPosition = placementPositionHP();
     }
@@ -124,7 +124,7 @@ if(HP().hostSelectedTarget != EmptyArray())
     HP().hostSelectedTarget = EmptyArray();
     MinWait();
     updateSelectionArray();
-    
+
 }
 
 rule: "Swap Bot Teams"
@@ -148,7 +148,7 @@ if(HP().botTeamButtonLocked == false)
         TeamOf(HP().hostHoverTarget[1])
       ];
       MinWait();
-      DestroyDummyBot(HP().botTeamSwapData[5], HP().botTeamSwapData[4]); 
+      DestroyDummyBot(HP().botTeamSwapData[5], HP().botTeamSwapData[4]);
       Wait(.250);
       CreateDummyBot(
                 HP().botTeamSwapData[0],
@@ -169,7 +169,7 @@ if(HP().botTeamButtonLocked == false)
      HP().botTeamSwapData = null;
      updateSelectionArray();
      HP().botTeamButtonLocked = false;
-     
+
 }
 
 rule: "Remove Bot"

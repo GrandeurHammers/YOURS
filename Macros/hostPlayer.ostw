@@ -39,10 +39,10 @@ define showDropButton() : inEdit() && HP().hostSelectedTarget != EmptyArray() &&
 
 define isAliveHP() : IsAlive(HP());
 define grabInWorldText() : CreateInWorldText(
-    VisibleTo: showDropButton() ? HP() : [], 
+    VisibleTo: showDropButton() ? HP() : [],
     Header: <"<0> DROP", InputBindingString(Button.PrimaryFire)>,
     Position: HP().grabbedBot, 1,
-    Clipping: Clipping.DoNotClip, 
+    Clipping: Clipping.DoNotClip,
     Reevaluation : InworldTextRev.VisibleToPositionAndString,
     TextColor: Color.White,
     Spectators: Spectators.DefaultVisibility
@@ -88,7 +88,7 @@ define  getSelectionBotArray(): MappedArray(getAllBots(), [PositionOf(ArrayEleme
 define  getSelectionLookOrbArray(): MappedArray(getAllBots(), [ArrayElement().botLookPosition, ArrayElement(), EntityType.LookOrb]);
 
 define  setupSelectionArray(): Append(getSelectionBotArray(), getSelectionLookOrbArray());
-// define selectionArrayHP(): 
+// define selectionArrayHP():
 
 define  getSelectionArray(): FilteredArray(setupSelectionArray(), ArrayElement()[0] == true);
 
@@ -114,7 +114,7 @@ FilteredArray(
     ) == true
 );
 
-define closestSelectionEntity(define vectors) : 
+define closestSelectionEntity(define vectors) :
 FirstOf(
     FilteredArray(
     SortedArray(
@@ -173,7 +173,7 @@ void LoadSavedBotValues() "【 Subroutine 】▒▒  LoadSavedBotValues ▒▒"
               botSavedValues[i][4],
               botSavedValues[i][5]
           );
-          botSavedValues[i] = 
+          botSavedValues[i] =
           [
               LastCreatedEntity(),
               botSavedValues[i][1],
@@ -182,7 +182,7 @@ void LoadSavedBotValues() "【 Subroutine 】▒▒  LoadSavedBotValues ▒▒"
               botSavedValues[i][4],
               botSavedValues[i][5]
           ];
-        } 
+        }
     }
     MinWait();
     for (define i = 0; i < CountOf(botSavedValues); i++) {

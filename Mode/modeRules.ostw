@@ -46,7 +46,7 @@ define allBotsArray() : FilteredArray(AllPlayers(Team.All), ArrayElement() != HP
 
 
 
-// 
+//
 rule: "Enter Normal Mode"
 if(HP().modeChangeLocked == false)
 if(btnHeld(Button.Interact))
